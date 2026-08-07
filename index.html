@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#173f36" />
     <title>Control de gastos · La Querendona</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=2026-08-07-2" />
   </head>
   <body>
     <div class="app-shell">
@@ -42,8 +42,13 @@
         <header class="topbar">
           <div class="mobile-brand"><div class="brand-mark">Q</div><strong>La Querendona</strong></div>
           <div class="period-control">
-            <label for="periodSelect">Periodo</label>
-            <select id="periodSelect" aria-label="Seleccionar periodo"></select>
+            <label for="periodSelectButton">Periodo</label>
+            <div class="custom-select period-select" id="periodSelectControl">
+              <button class="custom-select-button" id="periodSelectButton" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span id="periodSelectValue">Seleccionar periodo</span><span class="select-chevron">⌄</span>
+              </button>
+              <div class="custom-select-menu period-select-menu" id="periodSelectMenu" role="listbox" aria-label="Seleccionar periodo"></div>
+            </div>
           </div>
           <div class="topbar-actions">
             <button class="ghost-button" id="exportCsv"><span>↓</span> Exportar CSV</button>

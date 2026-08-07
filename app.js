@@ -52,6 +52,20 @@ const shortDate = value => value ? new Intl.DateTimeFormat('es-MX', { day: '2-di
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 const getPeriod = () => periods.find(period => period.id === selectedPeriodId) || periods[0];
 const getWeek = () => getPeriod().weeks[selectedWeekIndex] || getPeriod().weeks[0];
+const periodRangeLabel = period => {
+  const dates = period.weeks.flatMap(week => [week.start, week.end]).filter(Boolean).sort();
+  if (!dates.length) return '';
+  const start = new Date(`${dates[0]}T12:00:00`);
+  const end = new Date(`${dates.at(-1)}T12:00:00`);
+  const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  const startMonth = months[start.getUTCMonth()];
+  const endMonth = months[end.getUTCMonth()];
+  const startYear = start.getUTCFullYear();
+  const endYear = end.getUTCFullYear();
+  if (startYear === endYear && start.getUTCMonth() === end.getUTCMonth()) return `${startMonth} ${startYear}`;
+  if (startYear === endYear) return `${startMonth}–${endMonth} ${startYear}`;
+  return `${startMonth} ${startYear}–${endMonth} ${endYear}`;
+};
 const orderedWeeks = period => period.weeks.map((week, index) => ({ week, index })).sort((a, b) => {
   return String(b.week.start || '').localeCompare(String(a.week.start || ''));
 });
@@ -111,7 +125,10 @@ function setView(view) {
 }
 
 function renderSelectors() {
-  $('#periodSelect').innerHTML = periods.map(period => `<option value="${period.id}" ${period.id === selectedPeriodId ? 'selected' : ''}>${escapeHtml(period.name)}</option>`).join('');
+  const currentPeriod = getPeriod();
+  setPeriodMenuOpen(false);
+  $('#periodSelectValue').textContent = currentPeriod.name;
+  $('#periodSelectMenu').innerHTML = periods.map(period => `<button type="button" class="custom-option period-option ${period.id === selectedPeriodId ? 'selected' : ''}" role="option" aria-selected="${period.id === selectedPeriodId}" data-period-id="${period.id}"><span><strong>${escapeHtml(period.name)}</strong><small>${escapeHtml(periodRangeLabel(period))}</small></span><span class="period-check">${period.id === selectedPeriodId ? '✓' : ''}</span></button>`).join('');
   setWeekMenuOpen(false);
   const ordered = orderedWeeks(getPeriod());
   const currentWeek = getWeek();
@@ -226,6 +243,11 @@ function renderHistory() {
   }).join('');
 }
 
+function setPeriodMenuOpen(isOpen) {
+  $('#periodSelectControl').classList.toggle('open', isOpen);
+  $('#periodSelectButton').setAttribute('aria-expanded', String(isOpen));
+}
+
 function setWeekMenuOpen(isOpen) {
   $('#weekSelectControl').classList.toggle('open', isOpen);
   $('#weekSelectButton').setAttribute('aria-expanded', String(isOpen));
@@ -248,7 +270,15 @@ function bindEvents() {
       saveState(); renderDashboard(); renderCapture(); renderBudget(); showToast('Gasto eliminado.');
     }
   });
-  $('#periodSelect').addEventListener('change', event => { selectedPeriodId = event.target.value; selectedWeekIndex = 0; renderAll(); });
+  $('#periodSelectButton').addEventListener('click', event => { event.stopPropagation(); setPeriodMenuOpen(!$('#periodSelectControl').classList.contains('open')); });
+  $('#periodSelectMenu').addEventListener('click', event => {
+    const option = event.target.closest('[data-period-id]');
+    if (!option) return;
+    selectedPeriodId = option.dataset.periodId;
+    selectedWeekIndex = 0;
+    setPeriodMenuOpen(false);
+    renderAll();
+  });
   $('#weekSelectButton').addEventListener('click', event => { event.stopPropagation(); setWeekMenuOpen(!$('#weekSelectControl').classList.contains('open')); });
   $('#weekSelectMenu').addEventListener('click', event => {
     const option = event.target.closest('[data-week-index]');
@@ -257,7 +287,10 @@ function bindEvents() {
     setWeekMenuOpen(false);
     renderAll();
   });
-  document.addEventListener('click', event => { if (!event.target.closest('#weekSelectControl')) setWeekMenuOpen(false); });
+  document.addEventListener('click', event => {
+    if (!event.target.closest('#weekSelectControl')) setWeekMenuOpen(false);
+    if (!event.target.closest('#periodSelectControl')) setPeriodMenuOpen(false);
+  });
   $('#captureWeek').addEventListener('change', event => { selectedWeekIndex = Number(event.target.value); renderSelectors(); $('#captureBudget').textContent = money(budgetTotal()); });
   $('#expenseForm').addEventListener('submit', event => {
     event.preventDefault();
