@@ -30,67 +30,7 @@ const budgetItems = [
   { id: 'reserva', name: 'Fondo de reserva', weekly: 0, monthly: 0, group: 'fixed' },
 ];
 
-const periods = [
-  {
-    id: '2026-2sem', name: '2026 · 2º semestre', sheet: '2026-2sem', current: true,
-    weeks: [
-      ['4–10 mayo', 38833], ['11–17 mayo', 0], ['18–24 mayo', 34027.4], ['25–31 mayo', 30761.5],
-      ['2–8 febrero', 0], ['9–15 febrero', 60770.26], ['16–21 febrero', 39882.34], ['23 feb–1 mzo', 30854.5],
-      ['2–8 marzo', 24089], ['9–15 marzo', 37495.5], ['16–22 marzo', 29510.75], ['23–29 marzo', 25608.5],
-      ['30 mar–5 abril', 29654.3], ['6–12 abril', 21689.5], ['13–19 abril', 0], ['20–26 abril', 12143.1], ['27 abr–3 mayo', 17092],
-    ],
-  },
-  {
-    id: '2026-1sem', name: '2026 · 1er semestre', sheet: '2026-1sem',
-    weeks: [
-      ['1–4 enero', 11872.5], ['5–11 enero', 0], ['12–18 enero', 0], ['19–25 enero', 33395.5], ['26 ene–1 feb', 34168],
-      ['2–8 febrero', 33511.19], ['9–15 febrero', 60770.26], ['16–21 febrero', 39882.34], ['23 feb–1 mzo', 30854.5],
-      ['2–8 marzo', 25609], ['9–15 marzo', 37495.5], ['16–22 marzo', 29510.75], ['23–29 marzo', 25608.5],
-      ['30 mar–5 abril', 31033.3], ['6–12 abril', 21689.5], ['13–19 abril', 0], ['20–26 abril', 24643.1], ['27 abr–3 mayo', 29592],
-    ],
-  },
-  {
-    id: 'sep-dic25', name: 'Sep–dic 2025', sheet: 'sep-dic25',
-    weeks: [
-      ['1–7 septiembre', 0], ['8–14 septiembre', 34584.28], ['15–21 septiembre', 0], ['22–28 septiembre', 25782.8],
-      ['29 sep–5 oct', 36846.5], ['6–12 octubre', 22524.5], ['13–19 octubre', 0], ['20–26 octubre', 23508.5],
-      ['27 oct–2 nov', 34154.8], ['3–9 noviembre', 0], ['10–16 noviembre', 0], ['17–23 noviembre', 32575.5],
-      ['24–30 noviembre', 39836.3], ['1–7 diciembre', 36495.5], ['8–14 diciembre', 0], ['15–21 diciembre', 0], ['22–28 diciembre', 0], ['29–31 diciembre', 0],
-    ],
-  },
-  {
-    id: 'hoja1', name: 'Histórico · nov 2024–ago 2025', sheet: 'Hoja1',
-    weeks: [
-      ['9–17 noviembre', 65656.5], ['18–24 noviembre', 0], ['25 nov–1 dic', 30313.8], ['2–8 diciembre', 31485.5],
-      ['9–15 diciembre', 64032.74], ['16–22 diciembre', 73114.07], ['23–29 diciembre', 70169.3], ['20–26 enero', 33521.18],
-      ['27 ene–2 feb', 34700.94], ['3–9 febrero', 29074.58], ['17–23 febrero', 34257.34], ['2–9 marzo', 34648.49],
-      ['17–23 marzo', 29291], ['24–30 marzo', 34187.3], ['31 mar–6 abril', 33096.58], ['7–13 abril', 31717],
-      ['21–27 abril', 34001], ['28 abr–4 mayo', 35462.06], ['19–25 mayo', 33413.5], ['26 may–1 jun', 29961.9],
-      ['2–8 junio', 26713.5], ['16–22 junio', 33325.5], ['23–29 junio', 31792.5], ['7–13 julio', 24695.5],
-      ['14–20 julio', 32739.5], ['21–27 julio', 35044], ['4–10 agosto', 32005.9], ['18–24 agosto', 31613.5], ['25–31 agosto', 37971.68],
-    ],
-  },
-].map(period => ({ ...period, weeks: period.weeks.map(([label, total]) => ({ label, total })) }));
-
-const weekStartDates = {
-  '4–10 mayo': '2026-05-04',
-  '11–17 mayo': '2026-05-11',
-  '18–24 mayo': '2026-05-18',
-  '25–31 mayo': '2026-05-25',
-  '2–8 febrero': '2026-02-02',
-  '9–15 febrero': '2026-02-09',
-  '16–21 febrero': '2026-02-16',
-  '23 feb–1 mzo': '2026-02-23',
-  '2–8 marzo': '2026-03-02',
-  '9–15 marzo': '2026-03-09',
-  '16–22 marzo': '2026-03-16',
-  '23–29 marzo': '2026-03-23',
-  '30 mar–5 abril': '2026-03-30',
-  '6–12 abril': '2026-04-06',
-  '13–19 abril': '2026-04-13',
-  '20–26 abril': '2026-04-20',
-  '27 abr–3 mayo': '2026-04-27',
-};
+const periods = (window.EXCEL_PERIODS || []).slice().sort((a, b) => Number(Boolean(b.current)) - Number(Boolean(a.current)) || String(b.weeks.at(-1)?.end || '').localeCompare(String(a.weeks.at(-1)?.end || '')));
 
 const defaultState = () => ({
   budgets: Object.fromEntries(budgetItems.map(item => [item.id, { weekly: item.weekly, monthly: item.monthly }])),
@@ -113,9 +53,7 @@ const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '
 const getPeriod = () => periods.find(period => period.id === selectedPeriodId) || periods[0];
 const getWeek = () => getPeriod().weeks[selectedWeekIndex] || getPeriod().weeks[0];
 const orderedWeeks = period => period.weeks.map((week, index) => ({ week, index })).sort((a, b) => {
-  const dateA = weekStartDates[a.week.label] || `${period.id}-${String(a.index).padStart(2, '0')}`;
-  const dateB = weekStartDates[b.week.label] || `${period.id}-${String(b.index).padStart(2, '0')}`;
-  return dateB.localeCompare(dateA);
+  return String(b.week.start || '').localeCompare(String(a.week.start || ''));
 });
 const getBudget = id => state.budgets[id] || { weekly: 0, monthly: 0 };
 const getItem = id => budgetItems.find(item => item.id === id);
@@ -278,10 +216,11 @@ function totalRowHtml(weekly, monthly, spent, showSpent) {
 
 function renderHistory() {
   const allWeeks = periods.flatMap(period => period.weeks.map((week, index) => ({ period, week, index, total: period.id === selectedPeriodId && index === selectedWeekIndex ? selectedTotal() : week.total })));
-  const chartWeeks = allWeeks.filter(item => item.total > 0).slice(-18);
+  const sortedWeeks = allWeeks.slice().sort((a, b) => String(b.week.start || '').localeCompare(String(a.week.start || '')));
+  const chartWeeks = sortedWeeks.filter(item => item.total > 0).slice(0, 18).reverse();
   const max = Math.max(...chartWeeks.map(item => item.total), 1);
   $('#historyChart').innerHTML = chartWeeks.map(item => `<div class="chart-column"><div class="chart-bar-wrap"><div class="chart-bar" style="height:${Math.max(3, item.total / max * 100)}%" data-value="${money(item.total)}"></div></div><span class="chart-label" title="${escapeHtml(item.period.name)} · ${escapeHtml(item.week.label)}">${escapeHtml(item.week.label)}</span></div>`).join('');
-  $('#historyRows').innerHTML = allWeeks.slice().reverse().map(item => {
+  $('#historyRows').innerHTML = sortedWeeks.map(item => {
     const budget = budgetTotal(); const difference = budget - item.total; const status = item.total === 0 ? ['Sem dados', 'neutral'] : difference < 0 ? ['Excedido', 'over'] : ['En rango', ''];
     return `<tr><td><span class="tag">${escapeHtml(item.period.sheet)}</span></td><td>${escapeHtml(item.week.label)}</td><td class="align-right amount-cell">${money(item.total)}</td><td class="align-right">${money(budget)}</td><td class="align-right" style="color:${difference < 0 ? '#a34641' : 'inherit'}">${difference >= 0 ? '+' : ''}${money(difference)}</td><td><span class="status-pill ${status[1]}">${status[0]}</span></td></tr>`;
   }).join('');
