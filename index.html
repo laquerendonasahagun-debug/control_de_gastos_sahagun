@@ -62,7 +62,12 @@
             </div>
             <div class="week-picker">
               <label for="weekSelect">Semana visible</label>
-              <select id="weekSelect"></select>
+              <div class="custom-select" id="weekSelectControl">
+                <button class="custom-select-button" id="weekSelectButton" type="button" aria-haspopup="listbox" aria-expanded="false">
+                  <span id="weekSelectValue">Seleccionar semana</span><span class="select-chevron">⌄</span>
+                </button>
+                <div class="custom-select-menu" id="weekSelectMenu" role="listbox" aria-label="Semana visible"></div>
+              </div>
             </div>
           </div>
 
@@ -175,6 +180,7 @@
         </section>
       </main>
     </div>
+    <script src="excel-data.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

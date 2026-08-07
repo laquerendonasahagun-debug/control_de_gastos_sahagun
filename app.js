@@ -30,14 +30,6 @@ const budgetItems = [
   { id: 'reserva', name: 'Fondo de reserva', weekly: 0, monthly: 0, group: 'fixed' },
 ];
 
-const excelSnapshot = [
-  ['abarrote', 6045.5], ['verdura', 2314], ['pan', 631], ['basura', 150], ['agua', 263],
-  ['limpieza', 0], ['gas', 518], ['carne', 2997], ['coca-cola', 926], ['jarritos', 212],
-  ['cortes', 0], ['cerveza', 1318], ['leche', 102], ['pollo', 118], ['bistek', 0],
-  ['cremeria', 1909], ['tortillas', 2281], ['mandaditos', 0], ['desechable', 0], ['vinos', 475],
-  ['papeleria', 116], ['renta', 0], ['nomina', 14598], ['comision', 0], ['reserva', 0], ['otros', 3859.5],
-];
-
 const periods = [
   {
     id: '2026-2sem', name: '2026 · 2º semestre', sheet: '2026-2sem', current: true,
@@ -105,6 +97,7 @@ const defaultState = () => ({
   manualEntries: [],
 });
 
+const excelEntries = window.EXCEL_ENTRIES || [];
 let state = loadState();
 let selectedPeriodId = '2026-2sem';
 let selectedWeekIndex = 0;
@@ -128,8 +121,12 @@ const getBudget = id => state.budgets[id] || { weekly: 0, monthly: 0 };
 const getItem = id => budgetItems.find(item => item.id === id);
 const budgetTotal = group => budgetItems.filter(item => !group || item.group === group).reduce((sum, item) => sum + Number(getBudget(item.id).weekly || 0), 0);
 const monthlyTotal = group => budgetItems.filter(item => !group || item.group === group).reduce((sum, item) => sum + Number(getBudget(item.id).monthly || 0), 0);
+const excelForSelection = () => excelEntries.filter(entry => entry.periodId === selectedPeriodId && Number(entry.weekIndex) === Number(selectedWeekIndex));
 const manualForSelection = () => state.manualEntries.filter(entry => entry.periodId === selectedPeriodId && Number(entry.weekIndex) === Number(selectedWeekIndex));
-const baseTotal = () => getWeek().total || 0;
+const baseTotal = () => {
+  const rows = excelForSelection();
+  return rows.length ? rows.reduce((sum, entry) => sum + Number(entry.amount || 0), 0) : (getWeek().total || 0);
+};
 const selectedTotal = () => baseTotal() + manualForSelection().reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
 
 function loadState() {
@@ -143,18 +140,18 @@ function loadState() {
 function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
 function snapshotBreakdown() {
-  if (selectedPeriodId !== '2026-2sem' || selectedWeekIndex !== 0) return null;
-  const breakdown = Object.fromEntries(excelSnapshot.map(([id, amount]) => [id, amount]));
+  const excelRows = excelForSelection();
+  if (!excelRows.length && !manualForSelection().length) return null;
+  const breakdown = {};
+  for (const entry of excelRows) breakdown[entry.category] = (breakdown[entry.category] || 0) + Number(entry.amount || 0);
   for (const entry of manualForSelection()) breakdown[entry.category] = (breakdown[entry.category] || 0) + Number(entry.amount || 0);
   return breakdown;
 }
 
 function movementRows() {
+  const excelRows = excelForSelection();
   const manual = manualForSelection();
-  const seed = selectedPeriodId === '2026-2sem' && selectedWeekIndex === 0
-    ? excelSnapshot.filter(([, amount]) => amount > 0).map(([category, amount], index) => ({ id: `excel-${index}`, date: '2026-05-10', category, amount, note: 'Consolidado del Excel · semana 4–10 mayo', payment: 'Excel', source: 'excel' }))
-    : [];
-  return [...manual, ...seed].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  return [...manual, ...excelRows].sort((a, b) => String(b.date).localeCompare(String(a.date)));
 }
 
 function showToast(message) {
@@ -177,8 +174,12 @@ function setView(view) {
 
 function renderSelectors() {
   $('#periodSelect').innerHTML = periods.map(period => `<option value="${period.id}" ${period.id === selectedPeriodId ? 'selected' : ''}>${escapeHtml(period.name)}</option>`).join('');
-  const weekOptions = orderedWeeks(getPeriod()).map(({ week, index }) => `<option value="${index}" ${index === selectedWeekIndex ? 'selected' : ''}>${escapeHtml(week.label)} · ${money(week.total)}</option>`).join('');
-  $('#weekSelect').innerHTML = weekOptions;
+  setWeekMenuOpen(false);
+  const ordered = orderedWeeks(getPeriod());
+  const currentWeek = getWeek();
+  $('#weekSelectValue').textContent = `${currentWeek.label} · ${money(currentWeek.total)}`;
+  $('#weekSelectMenu').innerHTML = ordered.map(({ week, index }) => `<button type="button" class="custom-option ${index === selectedWeekIndex ? 'selected' : ''}" role="option" aria-selected="${index === selectedWeekIndex}" data-week-index="${index}">${escapeHtml(week.label)} <span>· ${money(week.total)}</span></button>`).join('');
+  const weekOptions = ordered.map(({ week, index }) => `<option value="${index}" ${index === selectedWeekIndex ? 'selected' : ''}>${escapeHtml(week.label)} · ${money(week.total)}</option>`).join('');
   $('#captureWeek').innerHTML = weekOptions;
 }
 
@@ -232,7 +233,7 @@ function renderRing(total, budget) {
 
 function renderMovementTable() {
   const rows = movementRows();
-  $('#movementRows').innerHTML = rows.length ? rows.slice(0, 10).map(row => movementRowHtml(row, false)).join('') : `<tr><td colspan="5" class="empty-row">No hay movimientos para esta semana.</td></tr>`;
+  $('#movementRows').innerHTML = rows.length ? rows.map(row => movementRowHtml(row, false)).join('') : `<tr><td colspan="5" class="empty-row">No hay movimientos para esta semana.</td></tr>`;
 }
 
 function movementRowHtml(row, includePayment) {
@@ -286,6 +287,11 @@ function renderHistory() {
   }).join('');
 }
 
+function setWeekMenuOpen(isOpen) {
+  $('#weekSelectControl').classList.toggle('open', isOpen);
+  $('#weekSelectButton').setAttribute('aria-expanded', String(isOpen));
+}
+
 function downloadCsv(filename, rows) {
   const csv = rows.map(row => row.map(value => `"${String(value ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
   const link = document.createElement('a');
@@ -304,8 +310,16 @@ function bindEvents() {
     }
   });
   $('#periodSelect').addEventListener('change', event => { selectedPeriodId = event.target.value; selectedWeekIndex = 0; renderAll(); });
-  $('#weekSelect').addEventListener('change', event => { selectedWeekIndex = Number(event.target.value); renderAll(); });
-  $('#captureWeek').addEventListener('change', event => { selectedWeekIndex = Number(event.target.value); $('#weekSelect').value = String(selectedWeekIndex); $('#captureBudget').textContent = money(budgetTotal()); });
+  $('#weekSelectButton').addEventListener('click', event => { event.stopPropagation(); setWeekMenuOpen(!$('#weekSelectControl').classList.contains('open')); });
+  $('#weekSelectMenu').addEventListener('click', event => {
+    const option = event.target.closest('[data-week-index]');
+    if (!option) return;
+    selectedWeekIndex = Number(option.dataset.weekIndex);
+    setWeekMenuOpen(false);
+    renderAll();
+  });
+  document.addEventListener('click', event => { if (!event.target.closest('#weekSelectControl')) setWeekMenuOpen(false); });
+  $('#captureWeek').addEventListener('change', event => { selectedWeekIndex = Number(event.target.value); renderSelectors(); $('#captureBudget').textContent = money(budgetTotal()); });
   $('#expenseForm').addEventListener('submit', event => {
     event.preventDefault();
     const amount = Number($('#expenseAmount').value);
