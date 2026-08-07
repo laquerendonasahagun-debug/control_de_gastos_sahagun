@@ -80,6 +80,26 @@ const periods = [
   },
 ].map(period => ({ ...period, weeks: period.weeks.map(([label, total]) => ({ label, total })) }));
 
+const weekStartDates = {
+  '4–10 mayo': '2026-05-04',
+  '11–17 mayo': '2026-05-11',
+  '18–24 mayo': '2026-05-18',
+  '25–31 mayo': '2026-05-25',
+  '2–8 febrero': '2026-02-02',
+  '9–15 febrero': '2026-02-09',
+  '16–21 febrero': '2026-02-16',
+  '23 feb–1 mzo': '2026-02-23',
+  '2–8 marzo': '2026-03-02',
+  '9–15 marzo': '2026-03-09',
+  '16–22 marzo': '2026-03-16',
+  '23–29 marzo': '2026-03-23',
+  '30 mar–5 abril': '2026-03-30',
+  '6–12 abril': '2026-04-06',
+  '13–19 abril': '2026-04-13',
+  '20–26 abril': '2026-04-20',
+  '27 abr–3 mayo': '2026-04-27',
+};
+
 const defaultState = () => ({
   budgets: Object.fromEntries(budgetItems.map(item => [item.id, { weekly: item.weekly, monthly: item.monthly }])),
   manualEntries: [],
@@ -99,6 +119,11 @@ const shortDate = value => value ? new Intl.DateTimeFormat('es-MX', { day: '2-di
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 const getPeriod = () => periods.find(period => period.id === selectedPeriodId) || periods[0];
 const getWeek = () => getPeriod().weeks[selectedWeekIndex] || getPeriod().weeks[0];
+const orderedWeeks = period => period.weeks.map((week, index) => ({ week, index })).sort((a, b) => {
+  const dateA = weekStartDates[a.week.label] || `${period.id}-${String(a.index).padStart(2, '0')}`;
+  const dateB = weekStartDates[b.week.label] || `${period.id}-${String(b.index).padStart(2, '0')}`;
+  return dateB.localeCompare(dateA);
+});
 const getBudget = id => state.budgets[id] || { weekly: 0, monthly: 0 };
 const getItem = id => budgetItems.find(item => item.id === id);
 const budgetTotal = group => budgetItems.filter(item => !group || item.group === group).reduce((sum, item) => sum + Number(getBudget(item.id).weekly || 0), 0);
@@ -152,7 +177,7 @@ function setView(view) {
 
 function renderSelectors() {
   $('#periodSelect').innerHTML = periods.map(period => `<option value="${period.id}" ${period.id === selectedPeriodId ? 'selected' : ''}>${escapeHtml(period.name)}</option>`).join('');
-  const weekOptions = getPeriod().weeks.map((week, index) => `<option value="${index}" ${index === selectedWeekIndex ? 'selected' : ''}>${escapeHtml(week.label)} · ${money(week.total)}</option>`).join('');
+  const weekOptions = orderedWeeks(getPeriod()).map(({ week, index }) => `<option value="${index}" ${index === selectedWeekIndex ? 'selected' : ''}>${escapeHtml(week.label)} · ${money(week.total)}</option>`).join('');
   $('#weekSelect').innerHTML = weekOptions;
   $('#captureWeek').innerHTML = weekOptions;
 }
