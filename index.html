@@ -155,10 +155,23 @@
                 <div class="form-grid">
                   <label>Fecha *<input id="expenseDate" type="date" required /></label>
                   <label>Semana *<select id="captureWeek" required></select></label>
-                  <label class="wide">Concepto *<select id="expenseCategory" required></select></label>
-                  <label>Monto *<div class="currency-input"><span>$</span><input id="expenseAmount" type="number" min="0.01" step="0.01" placeholder="0.00" required /></div></label>
-                  <label>Forma de pago<select id="expensePayment"><option>Efectivo</option><option>Tarjeta</option><option>Transferencia</option><option>Otro</option></select></label>
-                  <label class="wide">Nota<input id="expenseNote" type="text" maxlength="80" placeholder="Ej. compra de insumos para el turno" /></label>
+  
+                  <!-- NUEVOS CAMPOS AQUÍ -->
+                  <label>¿Quién realizó el gasto? *
+                    <input id="expenseSpender" type="text" placeholder="Ej. Ian, Cajero..." required />
+                  </label>
+                  <label>Tipo de gasto *
+                    <select id="expenseType" required>
+                      <option value="Operativo">Gasto Operativo</option>
+                      <option value="Fijo">Gasto Fijo</option>
+                    </select>
+                  </label>
+                    <!-- FIN DE NUEVOS CAMPOS -->
+
+                    <label class="wide">Concepto *<select id="expenseCategory" required></select></label>
+                    <label>Monto *<div class="currency-input"><span>$</span><input id="expenseAmount" type="number" min="0.01" step="0.01" placeholder="0.00" required /></div></label>
+                    <label>Forma de pago<select id="expensePayment"><option>Efectivo</option><option>Tarjeta</option><option>Transferencia</option><option>Otro</option></select></label>
+                    <label class="wide">Nota<input id="expenseNote" type="text" maxlength="80" placeholder="Ej. compra de insumos para el turno" /></label>
                 </div>
                 <div class="form-actions"><button type="button" class="ghost-button" data-view="dashboard">Cancelar</button><button class="primary-button" type="submit">Guardar gasto <span>→</span></button></div>
               </form>

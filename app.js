@@ -292,20 +292,56 @@ function bindEvents() {
     if (!event.target.closest('#periodSelectControl')) setPeriodMenuOpen(false);
   });
   $('#captureWeek').addEventListener('change', event => { selectedWeekIndex = Number(event.target.value); renderSelectors(); $('#captureBudget').textContent = money(budgetTotal()); });
+
   $('#expenseForm').addEventListener('submit', event => {
     event.preventDefault();
     const amount = Number($('#expenseAmount').value);
     if (!amount || amount <= 0) return showToast('Escribe un monto mayor a cero.');
-    state.manualEntries.push({ id: `manual-${Date.now()}`, date: $('#expenseDate').value, category: $('#expenseCategory').value, amount, note: $('#expenseNote').value.trim() || 'Sin nota', payment: $('#expensePayment').value, periodId: selectedPeriodId, weekIndex: selectedWeekIndex, source: 'manual' });
-    saveState(); event.target.reset(); $('#expenseDate').value = selectedPeriodId === '2026-2sem' ? '2026-05-10' : new Date().toISOString().slice(0, 10); renderAll(); showToast('Gasto guardado y totales actualizados.'); setView('dashboard');
+    
+    state.manualEntries.push({ 
+      id: `manual-${Date.now()}`, 
+      date: $('#expenseDate').value, 
+      category: $('#expenseCategory').value, 
+      amount, 
+      note: $('#expenseNote').value.trim() || 'Sin nota', 
+      payment: $('#expensePayment').value,
+      spender: $('#expenseSpender').value.trim(), // Nuevo campo guardado
+      expenseType: $('#expenseType').value,       // Nuevo campo guardado
+      periodId: selectedPeriodId, 
+      weekIndex: selectedWeekIndex, 
+      source: 'manual' 
+    });
+    
+    saveState(); 
+    event.target.reset(); 
+    $('#expenseDate').value = selectedPeriodId === '2026-2sem' ? '2026-05-10' : new Date().toISOString().slice(0, 10); 
+    renderAll(); 
+    showToast('Gasto guardado y totales actualizados.'); 
+    setView('dashboard');
   });
+
+
   document.addEventListener('change', event => {
     const input = event.target.closest('[data-budget-id]');
     if (!input) return;
     const value = Math.max(0, Number(input.value) || 0); const id = input.dataset.budgetId;
     state.budgets[id].weekly = value; state.budgets[id].monthly = value * 4; saveState(); renderAll(); showToast('Presupuesto actualizado.');
   });
-  $('#exportCsv').addEventListener('click', () => { const rows = [['Fecha', 'Concepto', 'Nota', 'Forma de pago', 'Monto']].concat(movementRows().map(row => [row.date, getItem(row.category)?.name || row.category, row.note, row.payment || 'Excel', row.amount])); downloadCsv(`control-gastos-${selectedPeriodId}.csv`, rows); showToast('CSV descargado.'); });
+
+  $('#exportCsv').addEventListener('click', () => { 
+    const rows = [['Fecha', 'Concepto', 'Tipo de gasto', 'Quién realizó el gasto', 'Nota', 'Forma de pago', 'Monto']].concat(movementRows().map(row => [
+      row.date, 
+      getItem(row.category)?.name || row.category, 
+      row.expenseType || (getItem(row.category)?.group === 'fixed' ? 'Fijo' : 'Operativo'),
+      row.spender || '—',
+      row.note, 
+      row.payment || 'Excel', 
+      row.amount
+    ])); 
+    downloadCsv(`control-gastos-${selectedPeriodId}.csv`, rows); 
+    showToast('CSV descargado.'); 
+  });
+
   $('#historyExport').addEventListener('click', () => { const rows = [['Hoja', 'Semana', 'Gasto', 'Presupuesto semanal', 'Variación']]; periods.forEach(period => period.weeks.forEach((week, index) => rows.push([period.sheet, week.label, index === selectedWeekIndex && period.id === selectedPeriodId ? selectedTotal() : week.total, budgetTotal(), budgetTotal() - week.total]))); downloadCsv('historico-control-gastos.csv', rows); showToast('Histórico descargado.'); });
   $('#resetData').addEventListener('click', () => { if (!window.confirm('¿Restaurar los datos demo y borrar los gastos capturados?')) return; state = defaultState(); saveState(); selectedPeriodId = '2026-2sem'; selectedWeekIndex = 0; renderAll(); showToast('Datos demo restaurados.'); });
 }
