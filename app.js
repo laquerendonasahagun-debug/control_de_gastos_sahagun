@@ -324,7 +324,6 @@ function bindEvents() {
     $('#expenseDate').value = localToday();
     renderAll(); 
     showToast('Gasto guardado y totales actualizados.'); 
-    setView('dashboard');
   });
 
 
