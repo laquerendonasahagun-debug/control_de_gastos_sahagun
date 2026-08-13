@@ -49,6 +49,13 @@ const $$ = selector => [...document.querySelectorAll(selector)];
 const money = value => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 2 }).format(Number(value) || 0);
 const compactMoney = value => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', notation: 'compact', maximumFractionDigits: 1 }).format(Number(value) || 0);
 const shortDate = value => value ? new Intl.DateTimeFormat('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${value}T12:00:00`)).replace('.', '') : '—';
+const localToday = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 const getPeriod = () => periods.find(period => period.id === selectedPeriodId) || periods[0];
 const getWeek = () => getPeriod().weeks[selectedWeekIndex] || getPeriod().weeks[0];
@@ -203,7 +210,7 @@ function renderCapture() {
   $('#newMovementCount').textContent = `${count} ${count === 1 ? 'registro' : 'registros'}`;
   const rows = [...state.manualEntries].sort((a, b) => String(b.date).localeCompare(String(a.date)));
   $('#newMovementRows').innerHTML = rows.length ? rows.map(row => movementRowHtml(row, true)).join('') : `<tr><td colspan="6" class="empty-row">Los gastos que guardes aparecerán aquí.</td></tr>`;
-  if (!$('#expenseDate').value) $('#expenseDate').value = selectedPeriodId === '2026-2sem' ? '2026-05-10' : new Date().toISOString().slice(0, 10);
+  if (!$('#expenseDate').value) $('#expenseDate').value = localToday();
 }
 
 function renderBudget() {
@@ -314,7 +321,7 @@ function bindEvents() {
     
     saveState(); 
     event.target.reset(); 
-    $('#expenseDate').value = selectedPeriodId === '2026-2sem' ? '2026-05-10' : new Date().toISOString().slice(0, 10); 
+    $('#expenseDate').value = localToday();
     renderAll(); 
     showToast('Gasto guardado y totales actualizados.'); 
     setView('dashboard');
@@ -349,4 +356,5 @@ function bindEvents() {
 function renderAll() { renderSelectors(); renderDashboard(); if (activeView === 'capture') renderCapture(); if (activeView === 'budget') renderBudget(); if (activeView === 'history') renderHistory(); }
 
 bindEvents();
+$('#expenseDate').value = localToday();
 renderAll();
