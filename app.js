@@ -279,7 +279,7 @@ function renderBudget() {
 
 function budgetRowHtml(item, spent, spentToday, fixed = false) {
   const budget = getBudget(item.id);
-  return `<tr><td><strong>${escapeHtml(item.name)}</strong></td><td class="align-right daily-amount">${money(spentToday)}</td><td class="align-right"><input class="budget-input" type="number" min="0" step="0.01" value="${Number(budget.weekly)}" data-budget-id="${item.id}" data-budget-field="weekly" aria-label="Presupuesto semanal de ${escapeHtml(item.name)}"></td><td class="align-right">${money(budget.monthly)}</td>${fixed ? '' : `<td class="align-right amount-cell">${money(spent)}</td>`}</tr>`;
+  return `<tr><td><strong>${escapeHtml(item.name)}</strong></td><td class="align-right daily-amount">${money(spentToday)}</td><td class="align-right">${money(budget.weekly)}</td><td class="align-right">${money(budget.monthly)}</td>${fixed ? '' : `<td class="align-right amount-cell">${money(spent)}</td>`}</tr>`;
 }
 
 function totalRowHtml(weekly, monthly, spent, spentToday, showSpent) {
@@ -371,15 +371,6 @@ function bindEvents() {
     renderAll(); 
     showToast('Gasto guardado y totales actualizados.'); 
   });
-
-
-  document.addEventListener('change', event => {
-    const input = event.target.closest('[data-budget-id]');
-    if (!input) return;
-    const value = Math.max(0, Number(input.value) || 0); const id = input.dataset.budgetId;
-    state.budgets[id].weekly = value; state.budgets[id].monthly = value * 4; saveState(); renderAll(); showToast('Presupuesto actualizado.');
-  });
-
   $('#exportCsv').addEventListener('click', () => { 
     const rows = [['Fecha', 'Concepto', 'Tipo de gasto', 'Quién realizó el gasto', 'Nota', 'Forma de pago', 'Monto']].concat(movementRows().map(row => [
       row.date, 
