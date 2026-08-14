@@ -23,10 +23,12 @@ const budgetItems = [
   { id: 'vinos', name: 'Vinos y licores', weekly: 0, monthly: 0, group: 'operating' },
   { id: 'papeleria', name: 'Papelería', weekly: 0, monthly: 0, group: 'operating' },
   { id: 'comision', name: 'Comisión billipocket', weekly: 0, monthly: 0, group: 'operating' },
+  { id: 'caja', name: 'Caja', weekly: 0, monthly: 0, group: 'operating' },
   { id: 'otros', name: 'Otros', weekly: 0, monthly: 0, group: 'operating' },
   { id: 'nomina', name: 'Nómina', weekly: 0, monthly: 0, group: 'fixed' },
   { id: 'renta', name: 'Renta', weekly: 0, monthly: 0, group: 'fixed' },
   { id: 'luz', name: 'Luz', weekly: 0, monthly: 0, group: 'fixed' },
+  { id: 'gerencia', name: 'Gerencia', weekly: 0, monthly: 0, group: 'fixed' },
   { id: 'reserva', name: 'Fondo de reserva', weekly: 0, monthly: 0, group: 'fixed' },
 ];
 
