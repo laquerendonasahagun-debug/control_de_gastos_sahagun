@@ -112,12 +112,11 @@ function loadState() {
 
 function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
-function snapshotBreakdown() {
-  const excelRows = excelForSelection();
-  if (!excelRows.length && !manualForSelection().length) return null;
+function snapshotBreakdown(date = '') {
+  const rows = [...excelForSelection(), ...manualForSelection()].filter(entry => !date || entry.date === date);
+  if (!rows.length) return null;
   const breakdown = {};
-  for (const entry of excelRows) breakdown[entry.category] = (breakdown[entry.category] || 0) + Number(entry.amount || 0);
-  for (const entry of manualForSelection()) breakdown[entry.category] = (breakdown[entry.category] || 0) + Number(entry.amount || 0);
+  for (const entry of rows) breakdown[entry.category] = (breakdown[entry.category] || 0) + Number(entry.amount || 0);
   return breakdown;
 }
 
@@ -237,27 +236,28 @@ function renderCapture() {
 
 function renderBudget() {
   const breakdown = snapshotBreakdown() || {};
+  const todayBreakdown = snapshotBreakdown(localToday()) || {};
   const operating = budgetItems.filter(item => item.group === 'operating');
   const fixed = budgetItems.filter(item => item.group === 'fixed');
   $('#monthlyBudgetTotal').textContent = money(monthlyTotal());
   $('#operatingWeekly').textContent = money(budgetTotal('operating'));
   $('#fixedWeekly').textContent = money(budgetTotal('fixed'));
   $('#budgetGrandMonthly').textContent = money(monthlyTotal());
-  $('#operatingBudgetRows').innerHTML = operating.map(item => budgetRowHtml(item, breakdown[item.id] || 0)).join('');
-  $('#fixedBudgetRows').innerHTML = fixed.map(item => budgetRowHtml(item, breakdown[item.id] || 0, true)).join('');
-  $('#operatingBudgetTotal').innerHTML = totalRowHtml(budgetTotal('operating'), monthlyTotal('operating'), operating.reduce((sum, item) => sum + (breakdown[item.id] || 0), 0), true);
-  $('#fixedBudgetTotal').innerHTML = totalRowHtml(budgetTotal('fixed'), monthlyTotal('fixed'), 0, false);
+  $('#operatingBudgetRows').innerHTML = operating.map(item => budgetRowHtml(item, breakdown[item.id] || 0, todayBreakdown[item.id] || 0)).join('');
+  $('#fixedBudgetRows').innerHTML = fixed.map(item => budgetRowHtml(item, breakdown[item.id] || 0, todayBreakdown[item.id] || 0, true)).join('');
+  $('#operatingBudgetTotal').innerHTML = totalRowHtml(budgetTotal('operating'), monthlyTotal('operating'), operating.reduce((sum, item) => sum + (breakdown[item.id] || 0), 0), operating.reduce((sum, item) => sum + (todayBreakdown[item.id] || 0), 0), true);
+  $('#fixedBudgetTotal').innerHTML = totalRowHtml(budgetTotal('fixed'), monthlyTotal('fixed'), fixed.reduce((sum, item) => sum + (breakdown[item.id] || 0), 0), fixed.reduce((sum, item) => sum + (todayBreakdown[item.id] || 0), 0), false);
 }
 
-function budgetRowHtml(item, spent, fixed = false) {
+function budgetRowHtml(item, spent, spentToday, fixed = false) {
   const budget = getBudget(item.id);
   const usage = budget.weekly ? Math.round(spent / budget.weekly * 100) : 0;
-  return `<tr><td><strong>${escapeHtml(item.name)}</strong></td><td class="align-right"><input class="budget-input" type="number" min="0" step="0.01" value="${Number(budget.weekly)}" data-budget-id="${item.id}" data-budget-field="weekly" aria-label="Presupuesto semanal de ${escapeHtml(item.name)}"></td><td class="align-right">${money(budget.monthly)}</td>${fixed ? '' : `<td class="align-right amount-cell">${money(spent)}</td><td class="budget-progress"><div class="budget-progress-track"><span style="width:${Math.min(100, usage)}%"></span></div><small>${usage}%</small></td>`}</tr>`;
+  return `<tr><td><strong>${escapeHtml(item.name)}</strong></td><td class="align-right"><input class="budget-input" type="number" min="0" step="0.01" value="${Number(budget.weekly)}" data-budget-id="${item.id}" data-budget-field="weekly" aria-label="Presupuesto semanal de ${escapeHtml(item.name)}"></td><td class="align-right daily-amount">${money(spentToday)}</td><td class="align-right">${money(budget.monthly)}</td>${fixed ? '' : `<td class="align-right amount-cell">${money(spent)}</td><td class="budget-progress"><div class="budget-progress-track"><span style="width:${Math.min(100, usage)}%"></span></div><small>${usage}%</small></td>`}</tr>`;
 }
 
-function totalRowHtml(weekly, monthly, spent, showSpent) {
+function totalRowHtml(weekly, monthly, spent, spentToday, showSpent) {
   const usage = weekly ? Math.round(spent / weekly * 100) : 0;
-  return `<tr class="total-row"><td>Total</td><td class="align-right">${money(weekly)}</td><td class="align-right">${money(monthly)}</td>${showSpent ? `<td class="align-right">${money(spent)}</td><td>${usage}% usado</td>` : ''}</tr>`;
+  return `<tr class="total-row"><td>Total</td><td class="align-right">${money(weekly)}</td><td class="align-right">${money(spentToday)}</td><td class="align-right">${money(monthly)}</td>${showSpent ? `<td class="align-right">${money(spent)}</td><td>${usage}% usado</td>` : ''}</tr>`;
 }
 
 function renderHistory() {
