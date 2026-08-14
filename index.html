@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#173f36" />
     <title>Control de gastos · La Querendona</title>
-    <link rel="stylesheet" href="styles.css?v=2026-08-14-2" />
+    <link rel="stylesheet" href="styles.css?v=2026-08-14-3" />
   </head>
   <body>
     <div class="app-shell">
@@ -98,37 +98,16 @@
               <strong id="kpiSpent">$0</strong>
               <span class="kpi-note" id="kpiSpentNote">Semana seleccionada</span>
             </article>
-            <article class="kpi-card">
-              <div class="kpi-top"><span class="kpi-label">Presupuesto semanal</span><span class="kpi-icon pink">▤</span></div>
-              <strong id="kpiBudget">$0</strong>
-              <span class="kpi-note">Operativo + gastos fijos</span>
-            </article>
-            <article class="kpi-card">
-              <div class="kpi-top"><span class="kpi-label">Uso del presupuesto</span><span class="kpi-icon amber">%</span></div>
-              <strong id="kpiUsage">0%</strong>
-              <div class="mini-progress"><span id="kpiUsageBar"></span></div>
-            </article>
           </div>
           </div>
 
-          <div class="content-grid two-thirds">
+          <div class="content-grid">
             <article class="panel">
               <div class="panel-heading">
                 <div><p class="eyebrow">Distribución</p><h3>Gasto por concepto</h3></div>
                 <span class="panel-caption" id="conceptCaption">Semana seleccionada</span>
               </div>
               <div id="conceptBars" class="concept-bars"></div>
-            </article>
-            <article class="panel budget-glance">
-              <div class="panel-heading">
-                <div><p class="eyebrow">Seguimiento</p><h3>Presupuesto semanal</h3></div>
-                <button class="text-button" data-view="budget">Ver detalle</button>
-              </div>
-              <div class="budget-ring-wrap">
-                <div class="budget-ring" id="budgetRing"><div><strong id="ringPercent">0%</strong><span>utilizado</span></div></div>
-                <div class="ring-legend"><div><span class="legend-dot spent"></span><span>Gastado</span><strong id="ringSpent">$0</strong></div><div><span class="legend-dot remaining"></span><span>Disponible</span><strong id="ringRemaining">$0</strong></div></div>
-              </div>
-              <div class="budget-callout" id="budgetCallout">La semana está dentro del presupuesto.</div>
             </article>
           </div>
 
@@ -197,6 +176,6 @@
     </div>
     <script src="period-data.js"></script>
     <script src="excel-data.js"></script>
-    <script src="app.js?v=2026-08-14-3"></script>
+    <script src="app.js?v=2026-08-14-4"></script>
   </body>
 </html>

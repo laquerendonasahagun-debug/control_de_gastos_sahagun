@@ -162,19 +162,13 @@ function renderDashboard() {
   const period = getPeriod();
   const week = getWeek();
   const total = selectedTotal();
-  const weeklyBudget = budgetTotal();
-  const usage = weeklyBudget ? (total / weeklyBudget) * 100 : 0;
   $('#dashboardSubtitle').textContent = `${period.name} · ${period.sheet}`;
   $('#heroTotal').textContent = money(total);
-  $('#heroMeta').textContent = `${week.label} · comparado contra ${money(weeklyBudget)} de presupuesto semanal`;
+  $('#heroMeta').textContent = week.label;
   $('#kpiSpent').textContent = money(total);
   $('#kpiSpentNote').textContent = `${period.sheet} · ${week.label}`;
-  $('#kpiBudget').textContent = money(weeklyBudget);
-  $('#kpiUsage').textContent = `${Math.round(usage)}%`;
-  $('#kpiUsageBar').style.width = `${Math.min(100, Math.max(0, usage))}%`;
   $('#conceptCaption').textContent = week.label;
   renderConceptBars();
-  renderRing(total, weeklyBudget);
   renderMovementTable();
 }
 
@@ -188,18 +182,6 @@ function renderConceptBars() {
   const rows = Object.entries(breakdown).filter(([, amount]) => amount > 0).sort((a, b) => b[1] - a[1]).slice(0, 8);
   const max = rows[0]?.[1] || 1;
   container.innerHTML = rows.map(([id, amount]) => `<div class="concept-row"><span class="concept-name" title="${escapeHtml(getItem(id)?.name || id)}">${escapeHtml(getItem(id)?.name || id)}</span><div class="concept-track"><div class="concept-fill" style="width:${Math.max(3, (amount / max) * 100)}%"></div></div><span class="concept-amount">${compactMoney(amount)}</span></div>`).join('');
-}
-
-function renderRing(total, budget) {
-  const actualUsage = budget ? Math.max(0, total / budget * 100) : 0;
-  const visualUsage = Math.min(100, actualUsage);
-  $('#budgetRing').style.background = `conic-gradient(var(--forest-2) ${visualUsage * 3.6}deg, #edf4eb ${visualUsage * 3.6}deg)`;
-  $('#ringPercent').textContent = `${Math.round(actualUsage)}%`;
-  $('#ringSpent').textContent = money(total);
-  $('#ringRemaining').textContent = money(Math.max(0, budget - total));
-  $('#budgetCallout').textContent = total > budget ? `La semana excede el presupuesto por ${money(total - budget)}. Revisa los conceptos con mayor movimiento.` : `La semana está dentro del presupuesto. Aún puedes usar ${money(budget - total)} antes de llegar al límite.`;
-  $('#budgetCallout').style.background = total > budget ? '#fae4e0' : '';
-  $('#budgetCallout').style.color = total > budget ? '#a34641' : '';
 }
 
 function renderMovementTable() {
