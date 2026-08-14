@@ -44,6 +44,8 @@ let selectedPeriodId = currentPeriodId;
 let selectedWeekIndex = 0;
 let activeView = 'dashboard';
 let toastTimer;
+let rangeStartDate = '';
+let rangeEndDate = '';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -57,6 +59,8 @@ const localToday = () => {
   const day = String(today.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+rangeEndDate = localToday();
+rangeStartDate = `${rangeEndDate.slice(0, 7)}-01`;
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 const getPeriod = () => periods.find(period => period.id === selectedPeriodId) || periods[0];
 const getWeek = () => getPeriod().weeks[selectedWeekIndex] || getPeriod().weeks[0];
@@ -108,6 +112,31 @@ function monthlySpentForSelection() {
   }, 0), 0);
 }
 
+const entryIsInRange = entry => entry.periodId === selectedPeriodId && entry.date >= rangeStartDate && entry.date <= rangeEndDate;
+const dateRangeEntries = () => [...excelEntries, ...state.manualEntries].filter(entryIsInRange);
+const dateRangeLabel = () => rangeStartDate === rangeEndDate ? shortDate(rangeStartDate) : `${shortDate(rangeStartDate)} – ${shortDate(rangeEndDate)}`;
+
+function dateRangeTotal() {
+  const period = getPeriod();
+  const excelTotal = period.weeks.reduce((total, week, weekIndex) => {
+    const rows = excelEntries.filter(entry => entry.periodId === period.id && Number(entry.weekIndex) === weekIndex);
+    if (rows.length) return total + rows.filter(entryIsInRange).reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+    const overlapsRange = week.start <= rangeEndDate && week.end >= rangeStartDate;
+    return total + (overlapsRange ? Number(week.total || 0) : 0);
+  }, 0);
+  const manualTotal = state.manualEntries.filter(entryIsInRange).reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+  return excelTotal + manualTotal;
+}
+
+function dateRangeBreakdown() {
+  const rows = dateRangeEntries();
+  if (!rows.length) return null;
+  return rows.reduce((breakdown, entry) => {
+    breakdown[entry.category] = (breakdown[entry.category] || 0) + Number(entry.amount || 0);
+    return breakdown;
+  }, {});
+}
+
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
@@ -140,9 +169,7 @@ function snapshotBreakdown(date = '') {
 }
 
 function movementRows() {
-  const excelRows = excelForSelection();
-  const manual = manualForSelection();
-  return [...manual, ...excelRows].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  return dateRangeEntries().sort((a, b) => String(b.date).localeCompare(String(a.date)));
 }
 
 function showToast(message) {
@@ -168,11 +195,7 @@ function renderSelectors() {
   setPeriodMenuOpen(false);
   $('#periodSelectValue').textContent = currentPeriod.name;
   $('#periodSelectMenu').innerHTML = periods.map(period => `<button type="button" class="custom-option period-option ${period.id === selectedPeriodId ? 'selected' : ''}" role="option" aria-selected="${period.id === selectedPeriodId}" data-period-id="${period.id}"><span><strong>${escapeHtml(period.name)}</strong><small>${escapeHtml(periodRangeLabel(period))}</small></span><span class="period-check">${period.id === selectedPeriodId ? '✓' : ''}</span></button>`).join('');
-  setWeekMenuOpen(false);
   const ordered = orderedWeeks(getPeriod());
-  const currentWeek = getWeek();
-  $('#weekSelectValue').textContent = `${currentWeek.label} · ${money(currentWeek.total)}`;
-  $('#weekSelectMenu').innerHTML = ordered.map(({ week, index }) => `<button type="button" class="custom-option ${index === selectedWeekIndex ? 'selected' : ''}" role="option" aria-selected="${index === selectedWeekIndex}" data-week-index="${index}">${escapeHtml(week.label)} <span>· ${money(week.total)}</span></button>`).join('');
   const weekOptions = ordered.map(({ week, index }) => `<option value="${index}" ${index === selectedWeekIndex ? 'selected' : ''}>${escapeHtml(week.label)} · ${money(week.total)}</option>`).join('');
   $('#captureWeek').innerHTML = weekOptions;
 }
@@ -180,24 +203,26 @@ function renderSelectors() {
 function renderDashboard() {
   const period = getPeriod();
   const week = getWeek();
-  const total = selectedTotal();
+  const total = dateRangeTotal();
   $('#dashboardSubtitle').textContent = `${period.name} · ${period.sheet}`;
   $('#heroTotal').textContent = money(total);
-  $('#heroMeta').textContent = week.label;
-  $('#kpiSpent').textContent = money(total);
+  $('#heroMeta').textContent = dateRangeLabel();
+  $('#rangeStartDate').value = rangeStartDate;
+  $('#rangeEndDate').value = rangeEndDate;
+  $('#kpiSpent').textContent = money(selectedTotal());
   $('#kpiSpentNote').textContent = `${period.sheet} · ${week.label}`;
   $('#kpiMonthlySpent').textContent = money(monthlySpentForSelection());
   $('#kpiMonthlySpentNote').textContent = monthYearLabel(selectedMonthKey());
-  $('#conceptCaption').textContent = week.label;
+  $('#conceptCaption').textContent = dateRangeLabel();
   renderConceptBars();
   renderMovementTable();
 }
 
 function renderConceptBars() {
-  const breakdown = snapshotBreakdown();
+  const breakdown = dateRangeBreakdown();
   const container = $('#conceptBars');
   if (!breakdown) {
-    container.innerHTML = `<div class="empty-row">Este bloque del Excel conserva el total semanal, pero no un desglose visible para esta semana.</div>`;
+    container.innerHTML = `<div class="empty-row">No hay movimientos con desglose en el rango seleccionado.</div>`;
     return;
   }
   const rows = Object.entries(breakdown).filter(([, amount]) => amount > 0).sort((a, b) => b[1] - a[1]).slice(0, 8);
@@ -207,7 +232,7 @@ function renderConceptBars() {
 
 function renderMovementTable() {
   const rows = movementRows();
-  $('#movementRows').innerHTML = rows.length ? rows.map(row => movementRowHtml(row, false)).join('') : `<tr><td colspan="5" class="empty-row">No hay movimientos para esta semana.</td></tr>`;
+  $('#movementRows').innerHTML = rows.length ? rows.map(row => movementRowHtml(row, false)).join('') : `<tr><td colspan="5" class="empty-row">No hay movimientos en el rango seleccionado.</td></tr>`;
 }
 
 function movementRowHtml(row, includePayment) {
@@ -276,11 +301,6 @@ function setPeriodMenuOpen(isOpen) {
   $('#periodSelectButton').setAttribute('aria-expanded', String(isOpen));
 }
 
-function setWeekMenuOpen(isOpen) {
-  $('#weekSelectControl').classList.toggle('open', isOpen);
-  $('#weekSelectButton').setAttribute('aria-expanded', String(isOpen));
-}
-
 function downloadCsv(filename, rows) {
   const csv = rows.map(row => row.map(value => `"${String(value ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
   const link = document.createElement('a');
@@ -307,17 +327,18 @@ function bindEvents() {
     setPeriodMenuOpen(false);
     renderAll();
   });
-  $('#weekSelectButton').addEventListener('click', event => { event.stopPropagation(); setWeekMenuOpen(!$('#weekSelectControl').classList.contains('open')); });
-  $('#weekSelectMenu').addEventListener('click', event => {
-    const option = event.target.closest('[data-week-index]');
-    if (!option) return;
-    selectedWeekIndex = Number(option.dataset.weekIndex);
-    setWeekMenuOpen(false);
-    renderAll();
-  });
   document.addEventListener('click', event => {
-    if (!event.target.closest('#weekSelectControl')) setWeekMenuOpen(false);
     if (!event.target.closest('#periodSelectControl')) setPeriodMenuOpen(false);
+  });
+  $('#rangeStartDate').addEventListener('change', event => {
+    rangeStartDate = event.target.value || `${localToday().slice(0, 7)}-01`;
+    if (rangeStartDate > rangeEndDate) rangeEndDate = rangeStartDate;
+    renderDashboard();
+  });
+  $('#rangeEndDate').addEventListener('change', event => {
+    rangeEndDate = event.target.value || localToday();
+    if (rangeEndDate < rangeStartDate) rangeStartDate = rangeEndDate;
+    renderDashboard();
   });
   $('#captureWeek').addEventListener('change', event => { selectedWeekIndex = Number(event.target.value); renderSelectors(); $('#captureBudget').textContent = money(budgetTotal()); });
   $('#expenseType').addEventListener('change', renderExpenseCategories);

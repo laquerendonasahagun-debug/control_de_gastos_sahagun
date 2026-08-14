@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#173f36" />
     <title>Control de gastos · La Querendona</title>
-    <link rel="stylesheet" href="styles.css?v=2026-08-14-4" />
+    <link rel="stylesheet" href="styles.css?v=2026-08-14-5" />
   </head>
   <body>
     <div class="app-shell">
@@ -65,14 +65,10 @@
               <h1>Resumen de gastos</h1>
               <p class="muted" id="dashboardSubtitle">Visualiza el gasto de tu operación por semana y concepto.</p>
             </div>
-            <div class="week-picker">
-              <label for="weekSelect">Semana visible</label>
-              <div class="custom-select" id="weekSelectControl">
-                <button class="custom-select-button" id="weekSelectButton" type="button" aria-haspopup="listbox" aria-expanded="false">
-                  <span id="weekSelectValue">Seleccionar semana</span><span class="select-chevron">⌄</span>
-                </button>
-                <div class="custom-select-menu" id="weekSelectMenu" role="listbox" aria-label="Semana visible"></div>
-              </div>
+            <div class="date-range-picker" aria-label="Rango visible">
+              <span class="date-range-title">Rango visible</span>
+              <label>Desde<input id="rangeStartDate" type="date" /></label>
+              <label>Hasta<input id="rangeEndDate" type="date" /></label>
             </div>
           </div>
 
@@ -181,6 +177,6 @@
     </div>
     <script src="period-data.js"></script>
     <script src="excel-data.js"></script>
-    <script src="app.js?v=2026-08-14-5"></script>
+    <script src="app.js?v=2026-08-14-6"></script>
   </body>
 </html>
