@@ -163,7 +163,6 @@ function renderDashboard() {
   const week = getWeek();
   const total = selectedTotal();
   const weeklyBudget = budgetTotal();
-  const available = weeklyBudget - total;
   const usage = weeklyBudget ? (total / weeklyBudget) * 100 : 0;
   $('#dashboardSubtitle').textContent = `${period.name} · ${period.sheet}`;
   $('#heroTotal').textContent = money(total);
@@ -171,9 +170,6 @@ function renderDashboard() {
   $('#kpiSpent').textContent = money(total);
   $('#kpiSpentNote').textContent = `${period.sheet} · ${week.label}`;
   $('#kpiBudget').textContent = money(weeklyBudget);
-  $('#kpiAvailable').textContent = money(available);
-  $('#kpiAvailable').style.color = available < 0 ? '#a34641' : '';
-  $('#kpiAvailableNote').textContent = available < 0 ? 'Excedente del presupuesto' : 'Dentro del presupuesto';
   $('#kpiUsage').textContent = `${Math.round(usage)}%`;
   $('#kpiUsageBar').style.width = `${Math.min(100, Math.max(0, usage))}%`;
   $('#conceptCaption').textContent = week.label;

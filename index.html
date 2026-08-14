@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#173f36" />
     <title>Control de gastos · La Querendona</title>
-    <link rel="stylesheet" href="styles.css?v=2026-08-14-1" />
+    <link rel="stylesheet" href="styles.css?v=2026-08-14-2" />
   </head>
   <body>
     <div class="app-shell">
@@ -76,6 +76,7 @@
             </div>
           </div>
 
+          <div class="dashboard-summary-row">
           <div class="hero-card">
             <div>
               <span class="hero-kicker">Gasto registrado</span>
@@ -103,15 +104,11 @@
               <span class="kpi-note">Operativo + gastos fijos</span>
             </article>
             <article class="kpi-card">
-              <div class="kpi-top"><span class="kpi-label">Disponible</span><span class="kpi-icon aqua">✓</span></div>
-              <strong id="kpiAvailable">$0</strong>
-              <span class="kpi-note" id="kpiAvailableNote">Dentro del presupuesto</span>
-            </article>
-            <article class="kpi-card">
               <div class="kpi-top"><span class="kpi-label">Uso del presupuesto</span><span class="kpi-icon amber">%</span></div>
               <strong id="kpiUsage">0%</strong>
               <div class="mini-progress"><span id="kpiUsageBar"></span></div>
             </article>
+          </div>
           </div>
 
           <div class="content-grid two-thirds">
@@ -200,6 +197,6 @@
     </div>
     <script src="period-data.js"></script>
     <script src="excel-data.js"></script>
-    <script src="app.js?v=2026-08-14-2"></script>
+    <script src="app.js?v=2026-08-14-3"></script>
   </body>
 </html>
