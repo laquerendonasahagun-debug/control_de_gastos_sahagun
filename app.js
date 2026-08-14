@@ -88,6 +88,25 @@ const baseTotal = () => {
   return rows.length ? rows.reduce((sum, entry) => sum + Number(entry.amount || 0), 0) : (getWeek().total || 0);
 };
 const selectedTotal = () => baseTotal() + manualForSelection().reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+const selectedMonthKey = () => String(getWeek().start || localToday()).slice(0, 7);
+const monthYearLabel = monthKey => {
+  const label = new Intl.DateTimeFormat('es-MX', { month: 'long', year: 'numeric' }).format(new Date(`${monthKey}-01T12:00:00`));
+  return label.charAt(0).toUpperCase() + label.slice(1);
+};
+
+function monthlySpentForSelection() {
+  const monthKey = selectedMonthKey();
+  return periods.reduce((periodTotal, period) => periodTotal + period.weeks.reduce((weekTotal, week, weekIndex) => {
+    const excelRows = excelEntries.filter(entry => entry.periodId === period.id && Number(entry.weekIndex) === weekIndex);
+    const excelTotal = excelRows.length
+      ? excelRows.filter(entry => String(entry.date || '').startsWith(monthKey)).reduce((sum, entry) => sum + Number(entry.amount || 0), 0)
+      : (String(week.start || '').startsWith(monthKey) ? Number(week.total || 0) : 0);
+    const manualTotal = state.manualEntries
+      .filter(entry => entry.periodId === period.id && Number(entry.weekIndex) === weekIndex && String(entry.date || '').startsWith(monthKey))
+      .reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+    return weekTotal + excelTotal + manualTotal;
+  }, 0), 0);
+}
 
 function loadState() {
   try {
@@ -167,6 +186,8 @@ function renderDashboard() {
   $('#heroMeta').textContent = week.label;
   $('#kpiSpent').textContent = money(total);
   $('#kpiSpentNote').textContent = `${period.sheet} · ${week.label}`;
+  $('#kpiMonthlySpent').textContent = money(monthlySpentForSelection());
+  $('#kpiMonthlySpentNote').textContent = monthYearLabel(selectedMonthKey());
   $('#conceptCaption').textContent = week.label;
   renderConceptBars();
   renderMovementTable();
