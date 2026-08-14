@@ -31,6 +31,7 @@ const budgetItems = [
 ];
 
 const periods = (window.EXCEL_PERIODS || []).slice().sort((a, b) => Number(Boolean(b.current)) - Number(Boolean(a.current)) || String(b.weeks.at(-1)?.end || '').localeCompare(String(a.weeks.at(-1)?.end || '')));
+const currentPeriodId = periods.find(period => period.current)?.id || periods[0]?.id || '';
 
 const defaultState = () => ({
   budgets: Object.fromEntries(budgetItems.map(item => [item.id, { weekly: item.weekly, monthly: item.monthly }])),
@@ -39,7 +40,7 @@ const defaultState = () => ({
 
 const excelEntries = window.EXCEL_ENTRIES || [];
 let state = loadState();
-let selectedPeriodId = '2026-2sem';
+let selectedPeriodId = currentPeriodId;
 let selectedWeekIndex = 0;
 let activeView = 'dashboard';
 let toastTimer;
@@ -91,7 +92,20 @@ const selectedTotal = () => baseTotal() + manualForSelection().reduce((sum, entr
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-    if (saved?.budgets && Array.isArray(saved.manualEntries)) return saved;
+    if (saved?.budgets && Array.isArray(saved.manualEntries)) {
+      let migrated = false;
+      saved.manualEntries = saved.manualEntries.map(entry => {
+        if (periods.some(period => period.id === entry.periodId)) return entry;
+        const matchingPeriod = periods.find(period => period.weeks.some(week => entry.date && entry.date >= week.start && entry.date <= week.end));
+        const period = matchingPeriod || periods.find(item => item.id === currentPeriodId);
+        if (!period) return entry;
+        const matchingWeekIndex = period.weeks.findIndex(week => entry.date && entry.date >= week.start && entry.date <= week.end);
+        migrated = true;
+        return { ...entry, periodId: period.id, weekIndex: matchingWeekIndex >= 0 ? matchingWeekIndex : 0 };
+      });
+      if (migrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+      return saved;
+    }
   } catch (error) { console.warn('No se pudo leer la sesión guardada', error); }
   return defaultState();
 }
@@ -203,13 +217,21 @@ function movementRowHtml(row, includePayment) {
   return `<tr><td class="date-cell">${shortDate(row.date)}</td><td><span class="tag">${escapeHtml(item?.name || row.category)}</span></td>${includePayment ? `<td>${escapeHtml(row.payment || '—')}</td>` : ''}<td class="note-cell">${escapeHtml(row.note || 'Sin nota')}</td><td class="align-right amount-cell">${money(row.amount)}</td><td>${row.source === 'manual' ? `<button class="delete-button" data-delete-id="${row.id}" aria-label="Eliminar gasto">×</button>` : ''}</td></tr>`;
 }
 
+function renderExpenseCategories() {
+  const selectedCategory = $('#expenseCategory').value;
+  const group = $('#expenseType').value === 'Fijo' ? 'fixed' : 'operating';
+  const availableItems = budgetItems.filter(item => item.group === group);
+  $('#expenseCategory').innerHTML = availableItems.map(item => `<option value="${item.id}">${escapeHtml(item.name)}</option>`).join('');
+  if (availableItems.some(item => item.id === selectedCategory)) $('#expenseCategory').value = selectedCategory;
+}
+
 function renderCapture() {
-  $('#expenseCategory').innerHTML = budgetItems.map(item => `<option value="${item.id}">${escapeHtml(item.name)}</option>`).join('');
+  renderExpenseCategories();
   $('#captureBudget').textContent = money(budgetTotal());
-  const count = state.manualEntries.length;
+  const entries = [...manualForSelection()].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const count = entries.length;
   $('#newMovementCount').textContent = `${count} ${count === 1 ? 'registro' : 'registros'}`;
-  const rows = [...state.manualEntries].sort((a, b) => String(b.date).localeCompare(String(a.date)));
-  $('#newMovementRows').innerHTML = rows.length ? rows.map(row => movementRowHtml(row, true)).join('') : `<tr><td colspan="6" class="empty-row">Los gastos que guardes aparecerán aquí.</td></tr>`;
+  $('#newMovementRows').innerHTML = entries.length ? entries.map(row => movementRowHtml(row, true)).join('') : `<tr><td colspan="6" class="empty-row">Los gastos que guardes para esta semana aparecerán aquí.</td></tr>`;
   if (!$('#expenseDate').value) $('#expenseDate').value = localToday();
 }
 
@@ -299,21 +321,23 @@ function bindEvents() {
     if (!event.target.closest('#periodSelectControl')) setPeriodMenuOpen(false);
   });
   $('#captureWeek').addEventListener('change', event => { selectedWeekIndex = Number(event.target.value); renderSelectors(); $('#captureBudget').textContent = money(budgetTotal()); });
+  $('#expenseType').addEventListener('change', renderExpenseCategories);
 
   $('#expenseForm').addEventListener('submit', event => {
     event.preventDefault();
     const amount = Number($('#expenseAmount').value);
     if (!amount || amount <= 0) return showToast('Escribe un monto mayor a cero.');
+    const category = $('#expenseCategory').value;
     
     state.manualEntries.push({ 
       id: `manual-${Date.now()}`, 
       date: $('#expenseDate').value, 
-      category: $('#expenseCategory').value, 
+      category,
       amount, 
       note: $('#expenseNote').value.trim() || 'Sin nota', 
       payment: $('#expensePayment').value,
       spender: $('#expenseSpender').value.trim(), // Nuevo campo guardado
-      expenseType: $('#expenseType').value,       // Nuevo campo guardado
+      expenseType: getItem(category)?.group === 'fixed' ? 'Fijo' : 'Operativo',
       periodId: selectedPeriodId, 
       weekIndex: selectedWeekIndex, 
       source: 'manual' 
@@ -349,7 +373,7 @@ function bindEvents() {
   });
 
   $('#historyExport').addEventListener('click', () => { const rows = [['Hoja', 'Semana', 'Gasto', 'Presupuesto semanal', 'Variación']]; periods.forEach(period => period.weeks.forEach((week, index) => rows.push([period.sheet, week.label, index === selectedWeekIndex && period.id === selectedPeriodId ? selectedTotal() : week.total, budgetTotal(), budgetTotal() - week.total]))); downloadCsv('historico-control-gastos.csv', rows); showToast('Histórico descargado.'); });
-  $('#resetData').addEventListener('click', () => { if (!window.confirm('¿Restaurar los datos demo y borrar los gastos capturados?')) return; state = defaultState(); saveState(); selectedPeriodId = '2026-2sem'; selectedWeekIndex = 0; renderAll(); showToast('Datos demo restaurados.'); });
+  $('#resetData').addEventListener('click', () => { if (!window.confirm('¿Restaurar los datos demo y borrar los gastos capturados?')) return; state = defaultState(); saveState(); selectedPeriodId = currentPeriodId; selectedWeekIndex = 0; renderAll(); showToast('Datos demo restaurados.'); });
 }
 
 function renderAll() { renderSelectors(); renderDashboard(); if (activeView === 'capture') renderCapture(); if (activeView === 'budget') renderBudget(); if (activeView === 'history') renderHistory(); }
