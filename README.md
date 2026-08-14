@@ -1,6 +1,6 @@
-# Control de gastos · La Querendona
+# Control de gastos · La Querendona Ciudad Sahagún
 
-Aplicación web estática para convertir el archivo `Control de Gastos.xlsx` en un control operativo de gastos para Tepeapulco.
+Aplicación web estática para convertir el archivo `Control de Gastos.xlsx` en un control operativo de gastos para Ciudad Sahagún.
 
 ## Incluye
 

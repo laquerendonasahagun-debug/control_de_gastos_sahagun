@@ -3,7 +3,7 @@ window.EXCEL_PERIODS = [
     "id": "operacion-actual",
     "name": "Operación · 2do Semestre 2026",
     "current": true,
-    "sheet": "Caja Tepeapulco",
+    "sheet": "Caja Ciudad Sahagún",
     "weeks": [
       {
         "label": "10–16 ago 2026",
