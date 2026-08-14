@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#173f36" />
     <title>Control de gastos · La Querendona</title>
-    <link rel="stylesheet" href="styles.css?v=2026-08-14-5" />
+    <link rel="stylesheet" href="styles.css?v=2026-08-14-6" />
   </head>
   <body>
     <div class="app-shell">
@@ -135,7 +135,7 @@
 
                   <label>Concepto *<select id="expenseCategory" required></select></label>
                   <label>Tipo de gasto *
-                    <select id="expenseType" required>
+                    <select id="expenseType" required disabled title="Se asigna automáticamente según el concepto seleccionado">
                       <option value="Operativo">Gasto Operativo</option>
                       <option value="Fijo">Gasto Fijo</option>
                     </select>
@@ -176,6 +176,6 @@
     </div>
     <script src="period-data.js"></script>
     <script src="excel-data.js"></script>
-    <script src="app.js?v=2026-08-14-6"></script>
+    <script src="app.js?v=2026-08-14-7"></script>
   </body>
 </html>

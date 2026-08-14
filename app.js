@@ -240,12 +240,16 @@ function movementRowHtml(row, includePayment) {
   return `<tr><td class="date-cell">${shortDate(row.date)}</td><td><span class="tag">${escapeHtml(item?.name || row.category)}</span></td>${includePayment ? `<td>${escapeHtml(row.payment || '—')}</td>` : ''}<td class="note-cell">${escapeHtml(row.note || 'Sin nota')}</td><td class="align-right amount-cell">${money(row.amount)}</td><td>${row.source === 'manual' ? `<button class="delete-button" data-delete-id="${row.id}" aria-label="Eliminar gasto">×</button>` : ''}</td></tr>`;
 }
 
+function syncExpenseTypeFromCategory() {
+  const selectedItem = getItem($('#expenseCategory').value);
+  $('#expenseType').value = selectedItem?.group === 'fixed' ? 'Fijo' : 'Operativo';
+}
+
 function renderExpenseCategories() {
   const selectedCategory = $('#expenseCategory').value;
-  const group = $('#expenseType').value === 'Fijo' ? 'fixed' : 'operating';
-  const availableItems = budgetItems.filter(item => item.group === group);
-  $('#expenseCategory').innerHTML = availableItems.map(item => `<option value="${item.id}">${escapeHtml(item.name)}</option>`).join('');
-  if (availableItems.some(item => item.id === selectedCategory)) $('#expenseCategory').value = selectedCategory;
+  $('#expenseCategory').innerHTML = budgetItems.map(item => `<option value="${item.id}">${escapeHtml(item.name)}</option>`).join('');
+  if (budgetItems.some(item => item.id === selectedCategory)) $('#expenseCategory').value = selectedCategory;
+  syncExpenseTypeFromCategory();
 }
 
 function renderCapture() {
@@ -341,7 +345,7 @@ function bindEvents() {
     renderDashboard();
   });
   $('#captureWeek').addEventListener('change', event => { selectedWeekIndex = Number(event.target.value); renderSelectors(); $('#captureBudget').textContent = money(budgetTotal()); });
-  $('#expenseType').addEventListener('change', renderExpenseCategories);
+  $('#expenseCategory').addEventListener('change', syncExpenseTypeFromCategory);
 
   $('#expenseForm').addEventListener('submit', event => {
     event.preventDefault();
