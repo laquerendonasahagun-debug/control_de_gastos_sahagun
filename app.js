@@ -30,6 +30,8 @@ const budgetItems = [
   { id: 'reserva', name: 'Fondo de reserva', weekly: 0, monthly: 0, group: 'fixed' },
 ];
 
+const spendingPieColors = ['#24584a', '#8cbf8d', '#c17db9', '#83cfc5', '#e4a84c', '#7b8fc5', '#d4776a'];
+
 const periods = (window.EXCEL_PERIODS || []).slice().sort((a, b) => Number(Boolean(b.current)) - Number(Boolean(a.current)) || String(b.weeks.at(-1)?.end || '').localeCompare(String(a.weeks.at(-1)?.end || '')));
 const currentPeriodId = periods.find(period => period.current)?.id || periods[0]?.id || '';
 
@@ -211,7 +213,9 @@ function renderDashboard() {
   $('#kpiMonthlySpent').textContent = money(monthlySpentForSelection());
   $('#kpiMonthlySpentNote').textContent = monthYearLabel(selectedMonthKey());
   $('#conceptCaption').textContent = dateRangeLabel();
+  $('#spendingPieCaption').textContent = dateRangeLabel();
   renderConceptBars();
+  renderSpendingPie();
   renderMovementTable();
 }
 
@@ -225,6 +229,31 @@ function renderConceptBars() {
   const rows = Object.entries(breakdown).filter(([, amount]) => amount > 0).sort((a, b) => b[1] - a[1]).slice(0, 8);
   const max = rows[0]?.[1] || 1;
   container.innerHTML = rows.map(([id, amount]) => `<div class="concept-row"><span class="concept-name" title="${escapeHtml(getItem(id)?.name || id)}">${escapeHtml(getItem(id)?.name || id)}</span><div class="concept-track"><div class="concept-fill" style="width:${Math.max(3, (amount / max) * 100)}%"></div></div><span class="concept-amount">${compactMoney(amount)}</span></div>`).join('');
+}
+
+function renderSpendingPie() {
+  const breakdown = dateRangeBreakdown();
+  const container = $('#spendingPieContent');
+  const rows = Object.entries(breakdown || {}).filter(([, amount]) => amount > 0).sort((a, b) => b[1] - a[1]);
+  if (!rows.length) {
+    container.innerHTML = `<div class="empty-row spending-pie-empty">La gráfica aparecerá cuando registres gastos en este rango.</div>`;
+    return;
+  }
+
+  const visibleRows = rows.slice(0, 6);
+  if (rows.length > 6) visibleRows.push(['other', rows.slice(6).reduce((sum, [, amount]) => sum + amount, 0)]);
+  const total = visibleRows.reduce((sum, [, amount]) => sum + amount, 0);
+  let accumulated = 0;
+  const segments = visibleRows.map(([id, amount], index) => {
+    const start = accumulated / total * 100;
+    accumulated += amount;
+    const end = accumulated / total * 100;
+    return { id, amount, color: spendingPieColors[index % spendingPieColors.length], start, end };
+  });
+  const gradient = segments.map(segment => `${segment.color} ${segment.start}% ${segment.end}%`).join(', ');
+  const accessibleSummary = segments.map(segment => `${segment.id === 'other' ? 'Otros' : getItem(segment.id)?.name || segment.id}: ${money(segment.amount)}`).join(', ');
+
+  container.innerHTML = `<div class="spending-pie-layout"><div class="spending-pie" role="img" aria-label="Distribución del gasto. ${escapeHtml(accessibleSummary)}" style="background:conic-gradient(${gradient})"><div class="spending-pie-center"><span>Total</span><strong>${money(total)}</strong></div></div><div class="spending-pie-legend">${segments.map((segment, index) => { const name = segment.id === 'other' ? 'Otros' : getItem(segment.id)?.name || segment.id; const percentage = Math.round(segment.amount / total * 100); return `<div class="spending-pie-legend-row ${index === 0 ? 'is-leading' : ''}"><span class="spending-pie-dot" style="background:${segment.color}"></span><span class="spending-pie-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span><strong>${percentage}%</strong>${index === 0 ? '<small>Mayor gasto</small>' : ''}</div>`; }).join('')}</div></div>`;
 }
 
 function renderMovementTable() {

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#173f36" />
     <title>Control de gastos · La Querendona</title>
-    <link rel="stylesheet" href="styles.css?v=2026-08-14-7" />
+    <link rel="stylesheet" href="styles.css?v=2026-08-14-8" />
   </head>
   <body>
     <div class="app-shell">
@@ -85,13 +85,20 @@
             </article>
           </div>
 
-          <div class="content-grid">
+          <div class="content-grid dashboard-distribution-grid">
             <article class="panel">
               <div class="panel-heading">
                 <div><p class="eyebrow">Distribución</p><h3>Gasto por concepto</h3></div>
                 <span class="panel-caption" id="conceptCaption">Semana seleccionada</span>
               </div>
               <div id="conceptBars" class="concept-bars"></div>
+            </article>
+            <article class="panel spending-pie-panel">
+              <div class="panel-heading">
+                <div><p class="eyebrow">Comparativo</p><h3>Participación del gasto</h3></div>
+                <span class="panel-caption" id="spendingPieCaption">Rango seleccionado</span>
+              </div>
+              <div id="spendingPieContent" class="spending-pie-content"></div>
             </article>
           </div>
 
@@ -159,6 +166,6 @@
     </div>
     <script src="period-data.js"></script>
     <script src="excel-data.js"></script>
-    <script src="app.js?v=2026-08-14-11"></script>
+    <script src="app.js?v=2026-08-14-12"></script>
   </body>
 </html>
