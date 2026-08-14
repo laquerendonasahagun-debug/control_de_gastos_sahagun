@@ -203,10 +203,7 @@ function renderSelectors() {
 function renderDashboard() {
   const period = getPeriod();
   const week = getWeek();
-  const total = dateRangeTotal();
   $('#dashboardSubtitle').textContent = `${period.name} · ${period.sheet}`;
-  $('#heroTotal').textContent = money(total);
-  $('#heroMeta').textContent = dateRangeLabel();
   $('#rangeStartDate').value = rangeStartDate;
   $('#rangeEndDate').value = rangeEndDate;
   $('#kpiSpent').textContent = money(selectedTotal());
