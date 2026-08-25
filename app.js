@@ -1,62 +1,69 @@
 const STORAGE_KEY = 'la-querendona-control-gastos-v1';
+const EXPENSES_API = '/api/expenses';
+const AUTH_API = '/api/auth';
 
-const budgetItems = [
-  { id: 'abarrote', name: 'Abarrote', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'verdura', name: 'Verdura / chiles secos / hierbas de olor', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'pan', name: 'Pan', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'basura', name: 'Basura', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'agua', name: 'Agua', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'limpieza', name: 'Producto limpieza y mantelería', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'gas', name: 'Gas', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'carne', name: 'Carne', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'coca-cola', name: 'Coca-Cola', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'jarritos', name: 'Jarritos', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'cortes', name: 'Cortes, snacks', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'cerveza', name: 'Cerveza', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'leche', name: 'Leche', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'pollo', name: 'Pollo', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'bistek', name: 'Bistek', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'cremeria', name: 'Cremería', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'tortillas', name: 'Tortillas y masa', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'mandaditos', name: 'Mandaditos', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'desechable', name: 'Desechable', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'vinos', name: 'Vinos y licores', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'papeleria', name: 'Papelería', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'comision', name: 'Comisión billipocket', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'caja', name: 'Caja', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'otros', name: 'Otros', weekly: 0, monthly: 0, group: 'operating' },
-  { id: 'nomina', name: 'Nómina', weekly: 0, monthly: 0, group: 'fixed' },
-  { id: 'renta', name: 'Renta', weekly: 0, monthly: 0, group: 'fixed' },
-  { id: 'luz', name: 'Luz', weekly: 0, monthly: 0, group: 'fixed' },
-  { id: 'gerencia', name: 'Gerencia', weekly: 0, monthly: 0, group: 'fixed' },
-  { id: 'reserva', name: 'Fondo de reserva', weekly: 0, monthly: 0, group: 'fixed' },
+const expenseItems = [
+  { id: 'abarrote', name: 'Abarrote', group: 'operating' },
+  { id: 'verdura', name: 'Verdura / chiles secos / hierbas de olor', group: 'operating' },
+  { id: 'pan', name: 'Pan', group: 'operating' },
+  { id: 'basura', name: 'Basura', group: 'operating' },
+  { id: 'agua', name: 'Agua', group: 'operating' },
+  { id: 'limpieza', name: 'Producto limpieza y mantelería', group: 'operating' },
+  { id: 'gas', name: 'Gas', group: 'operating' },
+  { id: 'carne', name: 'Carne', group: 'operating' },
+  { id: 'coca-cola', name: 'Coca-Cola', group: 'operating' },
+  { id: 'jarritos', name: 'Jarritos', group: 'operating' },
+  { id: 'cortes', name: 'Cortes, snacks', group: 'operating' },
+  { id: 'cerveza', name: 'Cerveza', group: 'operating' },
+  { id: 'leche', name: 'Leche', group: 'operating' },
+  { id: 'pollo', name: 'Pollo', group: 'operating' },
+  { id: 'bistek', name: 'Bistek', group: 'operating' },
+  { id: 'cremeria', name: 'Cremería', group: 'operating' },
+  { id: 'tortillas', name: 'Tortillas y masa', group: 'operating' },
+  { id: 'mandaditos', name: 'Mandaditos', group: 'operating' },
+  { id: 'desechable', name: 'Desechable', group: 'operating' },
+  { id: 'vinos', name: 'Vinos y licores', group: 'operating' },
+  { id: 'papeleria', name: 'Papelería', group: 'operating' },
+  { id: 'comision', name: 'Comisión billipocket', group: 'operating' },
+  { id: 'caja', name: 'Caja', group: 'operating' },
+  { id: 'otros', name: 'Otros', group: 'operating' },
+  { id: 'nomina', name: 'Nómina', group: 'fixed' },
+  { id: 'renta', name: 'Renta', group: 'fixed' },
+  { id: 'luz', name: 'Luz', group: 'fixed' },
+  { id: 'gerencia', name: 'Gerencia', group: 'fixed' },
+  { id: 'reserva', name: 'Fondo de reserva', group: 'fixed' },
 ];
+const expenseSpenders = ['Alejandra', 'Horacio', 'Diego', 'Haytham', 'Mary'];
 
 const spendingPieColors = ['#24584a', '#8cbf8d', '#c17db9', '#83cfc5', '#e4a84c', '#7b8fc5', '#d4776a'];
 
 const periods = (window.EXCEL_PERIODS || []).slice().sort((a, b) => Number(Boolean(b.current)) - Number(Boolean(a.current)) || String(b.weeks.at(-1)?.end || '').localeCompare(String(a.weeks.at(-1)?.end || '')));
 const currentPeriodId = periods.find(period => period.current)?.id || periods[0]?.id || '';
 
-const defaultState = () => ({
-  budgets: Object.fromEntries(budgetItems.map(item => [item.id, { weekly: item.weekly, monthly: item.monthly }])),
-  manualEntries: [],
-});
-
 const excelEntries = window.EXCEL_ENTRIES || [];
-let state = loadState();
+let pendingLegacyEntries = loadLegacyEntries();
+let state = { manualEntries: [...pendingLegacyEntries] };
 let selectedPeriodId = currentPeriodId;
 let selectedWeekIndex = 0;
 let activeView = 'dashboard';
 let toastTimer;
+let databaseReady = false;
+let databaseSyncing = false;
 let activeCaptureMode = 'single';
 let bulkDraftEntries = [];
+let editingExpenseId = '';
 let rangeStartDate = '';
 let rangeEndDate = '';
+let activeDateFilter = 'month';
+let selectedFilterDay = '';
+let selectedFilterWeek = '';
+let selectedFilterMonth = '';
+let currentUser = null;
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
 const money = value => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 2 }).format(Number(value) || 0);
-const compactMoney = value => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', notation: 'compact', maximumFractionDigits: 1 }).format(Number(value) || 0);
+const newExpenseId = () => `manual-${globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
 const shortDate = value => value ? new Intl.DateTimeFormat('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${value}T12:00:00`)).replace('.', '') : '—';
 const localToday = () => {
   const today = new Date();
@@ -65,8 +72,40 @@ const localToday = () => {
   const day = String(today.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
-rangeEndDate = localToday();
-rangeStartDate = `${rangeEndDate.slice(0, 7)}-01`;
+const dateToIsoWeek = value => {
+  const source = new Date(`${value}T12:00:00`);
+  const date = new Date(Date.UTC(source.getFullYear(), source.getMonth(), source.getDate()));
+  const dayNumber = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNumber);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const weekNumber = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return `${date.getUTCFullYear()}-W${String(weekNumber).padStart(2, '0')}`;
+};
+const isoWeekRange = value => {
+  const match = /^(\d{4})-W(\d{2})$/.exec(value || '');
+  if (!match) return { start: localToday(), end: localToday() };
+  const year = Number(match[1]);
+  const week = Number(match[2]);
+  const januaryFourth = new Date(Date.UTC(year, 0, 4));
+  const januaryFourthDay = januaryFourth.getUTCDay() || 7;
+  const monday = new Date(januaryFourth);
+  monday.setUTCDate(januaryFourth.getUTCDate() - januaryFourthDay + 1 + ((week - 1) * 7));
+  const sunday = new Date(monday);
+  sunday.setUTCDate(monday.getUTCDate() + 6);
+  const format = date => date.toISOString().slice(0, 10);
+  return { start: format(monday), end: format(sunday) };
+};
+const monthRange = value => {
+  const monthKey = /^\d{4}-\d{2}$/.test(value || '') ? value : localToday().slice(0, 7);
+  const [year, month] = monthKey.split('-').map(Number);
+  const lastDay = new Date(year, month, 0).getDate();
+  const endOfMonth = `${monthKey}-${String(lastDay).padStart(2, '0')}`;
+  return { start: `${monthKey}-01`, end: monthKey === localToday().slice(0, 7) ? localToday() : endOfMonth };
+};
+selectedFilterDay = localToday();
+selectedFilterWeek = dateToIsoWeek(localToday());
+selectedFilterMonth = localToday().slice(0, 7);
+({ start: rangeStartDate, end: rangeEndDate } = monthRange(selectedFilterMonth));
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 const getPeriod = () => periods.find(period => period.id === selectedPeriodId) || periods[0];
 const getWeek = () => getPeriod().weeks[selectedWeekIndex] || getPeriod().weeks[0];
@@ -87,17 +126,18 @@ const periodRangeLabel = period => {
 const orderedWeeks = period => period.weeks.map((week, index) => ({ week, index })).sort((a, b) => {
   return String(b.week.start || '').localeCompare(String(a.week.start || ''));
 });
-const getBudget = id => state.budgets[id] || { weekly: 0, monthly: 0 };
-const getItem = id => budgetItems.find(item => item.id === id);
-const budgetTotal = group => budgetItems.filter(item => !group || item.group === group).reduce((sum, item) => sum + Number(getBudget(item.id).weekly || 0), 0);
-const monthlyTotal = group => budgetItems.filter(item => !group || item.group === group).reduce((sum, item) => sum + Number(getBudget(item.id).monthly || 0), 0);
+const getItem = id => expenseItems.find(item => item.id === id);
 const excelForSelection = () => excelEntries.filter(entry => entry.periodId === selectedPeriodId && Number(entry.weekIndex) === Number(selectedWeekIndex));
 const manualForSelection = () => state.manualEntries.filter(entry => entry.periodId === selectedPeriodId && Number(entry.weekIndex) === Number(selectedWeekIndex));
-const baseTotal = () => {
-  const rows = excelForSelection();
-  return rows.length ? rows.reduce((sum, entry) => sum + Number(entry.amount || 0), 0) : (getWeek().total || 0);
+const weekActualTotal = (periodId, weekIndex, week) => {
+  const excelRows = excelEntries.filter(entry => entry.periodId === periodId && Number(entry.weekIndex) === Number(weekIndex));
+  const importedTotal = excelRows.length ? excelRows.reduce((sum, entry) => sum + Number(entry.amount || 0), 0) : Number(week.total || 0);
+  const capturedTotal = state.manualEntries
+    .filter(entry => entry.periodId === periodId && Number(entry.weekIndex) === Number(weekIndex))
+    .reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+  return importedTotal + capturedTotal;
 };
-const selectedTotal = () => baseTotal() + manualForSelection().reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+const selectedTotal = () => weekActualTotal(selectedPeriodId, selectedWeekIndex, getWeek());
 const selectedMonthKey = () => String(getWeek().start || localToday()).slice(0, 7);
 const monthYearLabel = monthKey => {
   const label = new Intl.DateTimeFormat('es-MX', { month: 'long', year: 'numeric' }).format(new Date(`${monthKey}-01T12:00:00`));
@@ -118,9 +158,59 @@ function monthlySpentForSelection() {
   }, 0), 0);
 }
 
+function monthlyBreakdownForSelection() {
+  const monthKey = selectedMonthKey();
+  return [...excelEntries, ...state.manualEntries]
+    .filter(entry => String(entry.date || '').startsWith(monthKey))
+    .reduce((breakdown, entry) => {
+      breakdown[entry.category] = (breakdown[entry.category] || 0) + Number(entry.amount || 0);
+      return breakdown;
+    }, {});
+}
+
+const breakdownTotal = (items, breakdown) => items.reduce((sum, item) => sum + Number(breakdown[item.id] || 0), 0);
+
 const entryIsInRange = entry => entry.periodId === selectedPeriodId && entry.date >= rangeStartDate && entry.date <= rangeEndDate;
 const dateRangeEntries = () => [...excelEntries, ...state.manualEntries].filter(entryIsInRange);
-const dateRangeLabel = () => rangeStartDate === rangeEndDate ? shortDate(rangeStartDate) : `${shortDate(rangeStartDate)} – ${shortDate(rangeEndDate)}`;
+const dateSpanLabel = (start, end) => start === end ? shortDate(start) : `${shortDate(start)} – ${shortDate(end)}`;
+const dateRangeLabel = () => dateSpanLabel(rangeStartDate, rangeEndDate);
+const dashboardTotalForRange = (start, end) => [...excelEntries, ...state.manualEntries]
+  .filter(entry => entry.periodId === selectedPeriodId && String(entry.date || '') >= start && String(entry.date || '') <= end)
+  .reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+const dashboardDailyTotal = () => dashboardTotalForRange(selectedFilterDay, selectedFilterDay);
+const dashboardWeeklyRange = () => isoWeekRange(selectedFilterWeek);
+const dashboardWeeklyTotal = () => {
+  const { start, end } = dashboardWeeklyRange();
+  return dashboardTotalForRange(start, end);
+};
+const dashboardMonthlyTotal = () => {
+  const { start, end } = monthRange(selectedFilterMonth);
+  return dashboardTotalForRange(start, end);
+};
+
+function applyDateFilter() {
+  if (activeDateFilter === 'day') {
+    rangeStartDate = selectedFilterDay;
+    rangeEndDate = selectedFilterDay;
+  } else if (activeDateFilter === 'week') {
+    ({ start: rangeStartDate, end: rangeEndDate } = isoWeekRange(selectedFilterWeek));
+  } else {
+    ({ start: rangeStartDate, end: rangeEndDate } = monthRange(selectedFilterMonth));
+  }
+}
+
+function renderDateFilter() {
+  $$('[data-date-filter]').forEach(button => {
+    const isActive = button.dataset.dateFilter === activeDateFilter;
+    button.classList.toggle('is-active', isActive);
+    button.setAttribute('aria-selected', String(isActive));
+  });
+  $$('[data-date-control]').forEach(control => { control.hidden = control.dataset.dateControl !== activeDateFilter; });
+  $('#dayFilterDate').value = selectedFilterDay;
+  $('#weekFilterWeek').value = selectedFilterWeek;
+  $('#monthFilterMonth').value = selectedFilterMonth;
+  $('#dateFilterRange').textContent = dateRangeLabel();
+}
 
 function dateRangeTotal() {
   const period = getPeriod();
@@ -143,28 +233,124 @@ function dateRangeBreakdown() {
   }, {});
 }
 
-function loadState() {
+function loadLegacyEntries() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-    if (saved?.budgets && Array.isArray(saved.manualEntries)) {
-      let migrated = false;
-      saved.manualEntries = saved.manualEntries.map(entry => {
+    if (Array.isArray(saved?.manualEntries)) {
+      return saved.manualEntries.map(entry => {
         if (periods.some(period => period.id === entry.periodId)) return entry;
         const matchingPeriod = periods.find(period => period.weeks.some(week => entry.date && entry.date >= week.start && entry.date <= week.end));
         const period = matchingPeriod || periods.find(item => item.id === currentPeriodId);
         if (!period) return entry;
         const matchingWeekIndex = period.weeks.findIndex(week => entry.date && entry.date >= week.start && entry.date <= week.end);
-        migrated = true;
         return { ...entry, periodId: period.id, weekIndex: matchingWeekIndex >= 0 ? matchingWeekIndex : 0 };
       });
-      if (migrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
-      return saved;
     }
   } catch (error) { console.warn('No se pudo leer la sesión guardada', error); }
-  return defaultState();
+  return [];
 }
 
-function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+async function apiRequest(options = {}) {
+  const url = options.id ? `${EXPENSES_API}?id=${encodeURIComponent(options.id)}` : EXPENSES_API;
+  const response = await fetch(url, {
+    method: options.method || 'GET',
+    headers: options.body ? { 'Content-Type': 'application/json' } : undefined,
+    body: options.body ? JSON.stringify(options.body) : undefined,
+    cache: 'no-store',
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (response.status === 401) showLogin(payload.error || 'Inicia sesión nuevamente.');
+  if (!response.ok) throw new Error(payload.error || 'No fue posible conectar con la base de datos.');
+  return payload;
+}
+
+async function authRequest(options = {}) {
+  const response = await fetch(AUTH_API, {
+    method: options.method || 'GET',
+    headers: options.body ? { 'Content-Type': 'application/json' } : undefined,
+    body: options.body ? JSON.stringify(options.body) : undefined,
+    cache: 'no-store',
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.error || 'No fue posible iniciar sesión.');
+  return payload;
+}
+
+function showLogin(message = '') {
+  currentUser = null;
+  databaseReady = false;
+  state.manualEntries = [];
+  closeExpenseEdit();
+  $('#appShell').hidden = true;
+  $('#loginScreen').hidden = false;
+  $('#loginError').textContent = message;
+  $('#loginPassword').value = '';
+  window.setTimeout(() => $('#loginUsername').focus(), 0);
+}
+
+function applyRoleVisibility() {
+  const isAdmin = currentUser?.role === 'admin';
+  $$('[data-admin-only]').forEach(element => { element.hidden = !isAdmin; });
+  $('#appShell').dataset.role = currentUser?.role || '';
+  $('#sessionDisplayName').textContent = currentUser?.displayName || 'Usuario';
+  $('#sessionRole').textContent = isAdmin ? 'Acceso completo' : 'Solo captura de gastos';
+}
+
+async function startSession(user) {
+  currentUser = user;
+  applyRoleVisibility();
+  $('#loginScreen').hidden = true;
+  $('#appShell').hidden = false;
+  activeView = user.role === 'admin' ? 'dashboard' : 'capture';
+  databaseReady = user.role === 'employee';
+  renderAll();
+  setView(activeView);
+  if (user.role === 'admin') await syncExpenses({ migrateLegacy: true, silent: true });
+}
+
+async function initializeSession() {
+  try {
+    const payload = await authRequest();
+    await startSession(payload.user);
+  } catch (error) {
+    showLogin('');
+  }
+}
+
+function setDatabaseStatus(status, label) {
+  const statusElement = $('#databaseStatus');
+  const statusDot = $('#databaseStatusDot');
+  if (statusElement) statusElement.textContent = label;
+  if (statusDot) statusDot.dataset.status = status;
+}
+
+async function syncExpenses({ migrateLegacy = true, silent = false } = {}) {
+  if (currentUser?.role !== 'admin') return;
+  if (databaseSyncing) return;
+  databaseSyncing = true;
+  setDatabaseStatus('syncing', 'Sincronizando…');
+
+  try {
+    let payload = await apiRequest();
+    if (migrateLegacy && pendingLegacyEntries.length) {
+      payload = await apiRequest({ method: 'POST', body: { entries: pendingLegacyEntries } });
+      pendingLegacyEntries = [];
+      localStorage.removeItem(STORAGE_KEY);
+    }
+    state.manualEntries = Array.isArray(payload.entries) ? payload.entries : [];
+    databaseReady = true;
+    setDatabaseStatus('online', 'Base de datos conectada');
+    renderAll();
+    if (!silent) showToast('Gastos sincronizados con Neon.');
+  } catch (error) {
+    databaseReady = false;
+    setDatabaseStatus('offline', 'Sin conexión a la base de datos');
+    console.error('No se pudieron sincronizar los gastos:', error);
+    if (!silent) showToast(error.message);
+  } finally {
+    databaseSyncing = false;
+  }
+}
 
 function snapshotBreakdown(date = '') {
   const rows = [...excelForSelection(), ...manualForSelection()].filter(entry => !date || entry.date === date);
@@ -175,7 +361,10 @@ function snapshotBreakdown(date = '') {
 }
 
 function movementRows() {
-  return dateRangeEntries().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  return dateRangeEntries()
+    .map((row, index) => ({ row, index }))
+    .sort((a, b) => String(b.row.date).localeCompare(String(a.row.date)) || b.index - a.index)
+    .map(({ row }) => row);
 }
 
 function showToast(message) {
@@ -187,12 +376,12 @@ function showToast(message) {
 }
 
 function setView(view) {
+  if (currentUser?.role !== 'admin' && view !== 'capture') return;
   activeView = view;
   $$('.view').forEach(section => section.classList.toggle('active-view', section.id === `${view}View`));
   $$('.nav-item').forEach(button => button.classList.toggle('active', button.dataset.view === view));
   if (view === 'capture') renderCapture();
-  if (view === 'budget') renderBudget();
-  if (view === 'history') renderHistory();
+  if (view === 'expenses') renderExpenses();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -217,25 +406,30 @@ function renderSelectors() {
   $('#periodSelectValue').textContent = currentPeriod.name;
   $('#periodSelectMenu').innerHTML = periods.map(period => `<button type="button" class="custom-option period-option ${period.id === selectedPeriodId ? 'selected' : ''}" role="option" aria-selected="${period.id === selectedPeriodId}" data-period-id="${period.id}"><span><strong>${escapeHtml(period.name)}</strong><small>${escapeHtml(periodRangeLabel(period))}</small></span><span class="period-check">${period.id === selectedPeriodId ? '✓' : ''}</span></button>`).join('');
   const ordered = orderedWeeks(getPeriod());
-  const weekOptions = ordered.map(({ week, index }) => `<option value="${index}" ${index === selectedWeekIndex ? 'selected' : ''}>${escapeHtml(week.label)} · ${money(week.total)}</option>`).join('');
+  const weekOptions = ordered.map(({ week, index }) => `<option value="${index}" ${index === selectedWeekIndex ? 'selected' : ''}>${escapeHtml(week.label)} · ${money(weekActualTotal(currentPeriod.id, index, week))}</option>`).join('');
   $('#captureWeek').innerHTML = weekOptions;
   $('#bulkCaptureWeek').innerHTML = weekOptions;
 }
 
 function renderDashboard() {
   const period = getPeriod();
-  const week = getWeek();
+  const weeklyRange = dashboardWeeklyRange();
   $('#dashboardSubtitle').textContent = `${period.name} · ${period.sheet}`;
-  $('#rangeStartDate').value = rangeStartDate;
-  $('#rangeEndDate').value = rangeEndDate;
-  $('#kpiSpent').textContent = money(selectedTotal());
-  $('#kpiSpentNote').textContent = `${period.sheet} · ${week.label}`;
-  $('#kpiMonthlySpent').textContent = money(monthlySpentForSelection());
-  $('#kpiMonthlySpentNote').textContent = monthYearLabel(selectedMonthKey());
+  renderDateFilter();
+  $('#kpiDailySpent').textContent = money(dashboardDailyTotal());
+  $('#kpiDailySpentNote').textContent = `${selectedFilterDay === localToday() ? 'Hoy' : 'Día seleccionado'} · ${shortDate(selectedFilterDay)}`;
+  $('#kpiSpent').textContent = money(dashboardWeeklyTotal());
+  $('#kpiSpentNote').textContent = `${period.sheet} · ${dateSpanLabel(weeklyRange.start, weeklyRange.end)}`;
+  $('#kpiMonthlySpent').textContent = money(dashboardMonthlyTotal());
+  $('#kpiMonthlySpentNote').textContent = monthYearLabel(selectedFilterMonth);
   $('#conceptCaption').textContent = dateRangeLabel();
   $('#spendingPieCaption').textContent = dateRangeLabel();
+  $('#operatingPieCaption').textContent = dateRangeLabel();
+  $('#fixedPieCaption').textContent = dateRangeLabel();
   renderConceptBars();
-  renderSpendingPie();
+  renderSpendingPie('spendingPieContent');
+  renderSpendingPie('operatingPieContent', 'operating');
+  renderSpendingPie('fixedPieContent', 'fixed');
   renderMovementTable();
 }
 
@@ -248,15 +442,21 @@ function renderConceptBars() {
   }
   const rows = Object.entries(breakdown).filter(([, amount]) => amount > 0).sort((a, b) => b[1] - a[1]).slice(0, 8);
   const max = rows[0]?.[1] || 1;
-  container.innerHTML = rows.map(([id, amount]) => `<div class="concept-row"><span class="concept-name" title="${escapeHtml(getItem(id)?.name || id)}">${escapeHtml(getItem(id)?.name || id)}</span><div class="concept-track"><div class="concept-fill" style="width:${Math.max(3, (amount / max) * 100)}%"></div></div><span class="concept-amount">${compactMoney(amount)}</span></div>`).join('');
+  container.innerHTML = rows.map(([id, amount]) => `<div class="concept-row"><span class="concept-name" title="${escapeHtml(getItem(id)?.name || id)}">${escapeHtml(getItem(id)?.name || id)}</span><div class="concept-track"><div class="concept-fill" style="width:${Math.max(3, (amount / max) * 100)}%"></div></div><span class="concept-amount">${money(amount)}</span></div>`).join('');
 }
 
-function renderSpendingPie() {
+function renderSpendingPie(containerId, group = '') {
   const breakdown = dateRangeBreakdown();
-  const container = $('#spendingPieContent');
-  const rows = Object.entries(breakdown || {}).filter(([, amount]) => amount > 0).sort((a, b) => b[1] - a[1]);
+  const container = $(`#${containerId}`);
+  const rows = Object.entries(breakdown || {})
+    .filter(([id, amount]) => amount > 0 && (!group || getItem(id)?.group === group))
+    .sort((a, b) => b[1] - a[1]);
   if (!rows.length) {
-    container.innerHTML = `<div class="empty-row spending-pie-empty">La gráfica aparecerá cuando registres gastos en este rango.</div>`;
+    const typeLabel = group === 'operating' ? 'operativos' : group === 'fixed' ? 'fijos' : '';
+    const emptyMessage = typeLabel
+      ? `No hay gastos ${typeLabel} registrados en este rango.`
+      : 'La gráfica aparecerá cuando registres gastos en este rango.';
+    container.innerHTML = `<div class="empty-row spending-pie-empty">${emptyMessage}</div>`;
     return;
   }
 
@@ -277,13 +477,58 @@ function renderSpendingPie() {
 }
 
 function renderMovementTable() {
-  const rows = movementRows();
-  $('#movementRows').innerHTML = rows.length ? rows.map(row => movementRowHtml(row, false)).join('') : `<tr><td colspan="5" class="empty-row">No hay movimientos en el rango seleccionado.</td></tr>`;
+  const rows = movementRows().slice(0, 8);
+  $('#movementRows').innerHTML = rows.length ? rows.map(row => movementRowHtml(row, false, true)).join('') : `<tr><td colspan="6" class="empty-row">No hay movimientos en el rango seleccionado.</td></tr>`;
 }
 
-function movementRowHtml(row, includePayment) {
+function movementRowHtml(row, includePayment, includeSpender = includePayment, allowEdit = false) {
   const item = getItem(row.category);
-  return `<tr><td class="date-cell">${shortDate(row.date)}</td><td><span class="tag">${escapeHtml(item?.name || row.category)}</span></td>${includePayment ? `<td>${escapeHtml(row.payment || '—')}</td>` : ''}<td class="note-cell">${escapeHtml(row.note || 'Sin nota')}</td><td class="align-right amount-cell">${money(row.amount)}</td><td>${row.source === 'manual' ? `<button class="delete-button" data-delete-id="${row.id}" aria-label="Eliminar gasto">×</button>` : ''}</td></tr>`;
+  const actions = row.source === 'manual'
+    ? `<div class="row-actions">${allowEdit ? `<button class="edit-button" type="button" data-edit-id="${row.id}">Editar</button>` : ''}<button class="delete-button" type="button" data-delete-id="${row.id}" aria-label="Eliminar gasto">×</button></div>`
+    : '';
+  return `<tr><td class="date-cell">${shortDate(row.date)}</td><td><span class="tag">${escapeHtml(item?.name || row.category)}</span></td>${includeSpender ? `<td>${escapeHtml(row.spender || '—')}</td>` : ''}${includePayment ? `<td>${escapeHtml(row.payment || '—')}</td>` : ''}<td class="note-cell">${escapeHtml(row.note || 'Sin nota')}</td><td class="align-right amount-cell">${money(row.amount)}</td><td>${actions}</td></tr>`;
+}
+
+function resetExpenseForm() {
+  $('#expenseForm').reset();
+  $('#expenseDate').value = localToday();
+  renderExpenseCategories();
+}
+
+function closeExpenseEdit() {
+  editingExpenseId = '';
+  if ($('#editExpenseDialog').open) $('#editExpenseDialog').close();
+}
+
+function syncEditExpenseTypeFromCategory() {
+  const selectedItem = getItem($('#editExpenseCategory').value);
+  $('#editExpenseType').value = selectedItem?.group === 'fixed' ? 'Fijo' : 'Operativo';
+}
+
+function setEditExpenseSpender(spender) {
+  const selectedSpender = String(spender || '').trim();
+  const choices = selectedSpender && !expenseSpenders.includes(selectedSpender) ? [...expenseSpenders, selectedSpender] : expenseSpenders;
+  $('#editExpenseSpender').innerHTML = `<option value="" disabled>Selecciona una persona</option>${choices.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}${!expenseSpenders.includes(name) ? ' (registro anterior)' : ''}</option>`).join('')}`;
+  $('#editExpenseSpender').value = selectedSpender;
+}
+
+function startExpenseEdit(id) {
+  const entry = state.manualEntries.find(candidate => candidate.id === id);
+  if (!entry) return showToast('Este gasto ya no está disponible para editar.');
+  editingExpenseId = id;
+  const period = periods.find(candidate => candidate.id === entry.periodId) || getPeriod();
+  $('#editExpenseSubtitle').textContent = `${shortDate(entry.date)} · ${getItem(entry.category)?.name || entry.category}`;
+  $('#editExpenseWeek').innerHTML = period.weeks.map((week, index) => `<option value="${index}">${escapeHtml(week.label)}</option>`).join('');
+  $('#editExpenseCategory').innerHTML = expenseItems.map(item => `<option value="${item.id}">${escapeHtml(item.name)}</option>`).join('');
+  $('#editExpenseDate').value = entry.date;
+  $('#editExpenseWeek').value = Number(entry.weekIndex) || 0;
+  $('#editExpenseCategory').value = entry.category;
+  syncEditExpenseTypeFromCategory();
+  setEditExpenseSpender(entry.spender);
+  $('#editExpensePayment').value = entry.payment || 'Efectivo';
+  $('#editExpenseAmount').value = Number(entry.amount);
+  $('#editExpenseNote').value = entry.note === 'Sin nota' ? '' : entry.note || '';
+  $('#editExpenseDialog').showModal();
 }
 
 function syncExpenseTypeFromCategory() {
@@ -299,11 +544,11 @@ function syncBulkExpenseTypeFromCategory() {
 function renderExpenseCategories() {
   const selectedCategory = $('#expenseCategory').value;
   const selectedBulkCategory = $('#bulkExpenseCategory').value;
-  const options = budgetItems.map(item => `<option value="${item.id}">${escapeHtml(item.name)}</option>`).join('');
+  const options = expenseItems.map(item => `<option value="${item.id}">${escapeHtml(item.name)}</option>`).join('');
   $('#expenseCategory').innerHTML = options;
   $('#bulkExpenseCategory').innerHTML = options;
-  if (budgetItems.some(item => item.id === selectedCategory)) $('#expenseCategory').value = selectedCategory;
-  if (budgetItems.some(item => item.id === selectedBulkCategory)) $('#bulkExpenseCategory').value = selectedBulkCategory;
+  if (expenseItems.some(item => item.id === selectedCategory)) $('#expenseCategory').value = selectedCategory;
+  if (expenseItems.some(item => item.id === selectedBulkCategory)) $('#bulkExpenseCategory').value = selectedBulkCategory;
   syncExpenseTypeFromCategory();
   syncBulkExpenseTypeFromCategory();
 }
@@ -330,51 +575,38 @@ function renderBulkDrafts() {
 
 function renderCapture() {
   renderExpenseCategories();
-  $('#captureBudget').textContent = money(budgetTotal());
+  $('#captureWeeklySpent').textContent = money(selectedTotal());
   const entries = [...manualForSelection()].sort((a, b) => String(b.date).localeCompare(String(a.date)));
   const count = entries.length;
   $('#newMovementCount').textContent = `${count} ${count === 1 ? 'registro' : 'registros'}`;
-  $('#newMovementRows').innerHTML = entries.length ? entries.map(row => movementRowHtml(row, true)).join('') : `<tr><td colspan="6" class="empty-row">Los gastos que guardes para esta semana aparecerán aquí.</td></tr>`;
+  $('#newMovementRows').innerHTML = entries.length ? entries.map(row => movementRowHtml(row, true, true, true)).join('') : `<tr><td colspan="7" class="empty-row">Los gastos que guardes para esta semana aparecerán aquí.</td></tr>`;
   if (!$('#expenseDate').value) $('#expenseDate').value = localToday();
   if (!$('#bulkExpenseDate').value) $('#bulkExpenseDate').value = localToday();
   renderBulkDrafts();
   setCaptureMode(activeCaptureMode);
 }
 
-function renderBudget() {
-  const breakdown = snapshotBreakdown() || {};
+function renderExpenses() {
+  const weeklyBreakdown = snapshotBreakdown() || {};
   const todayBreakdown = snapshotBreakdown(localToday()) || {};
-  const operating = budgetItems.filter(item => item.group === 'operating');
-  const fixed = budgetItems.filter(item => item.group === 'fixed');
-  $('#monthlyBudgetTotal').textContent = money(monthlyTotal());
-  $('#operatingWeekly').textContent = money(budgetTotal('operating'));
-  $('#fixedWeekly').textContent = money(budgetTotal('fixed'));
-  $('#budgetGrandMonthly').textContent = money(monthlyTotal());
-  $('#operatingBudgetRows').innerHTML = operating.map(item => budgetRowHtml(item, breakdown[item.id] || 0, todayBreakdown[item.id] || 0)).join('');
-  $('#fixedBudgetRows').innerHTML = fixed.map(item => budgetRowHtml(item, breakdown[item.id] || 0, todayBreakdown[item.id] || 0, true)).join('');
-  $('#operatingBudgetTotal').innerHTML = totalRowHtml(budgetTotal('operating'), monthlyTotal('operating'), operating.reduce((sum, item) => sum + (breakdown[item.id] || 0), 0), operating.reduce((sum, item) => sum + (todayBreakdown[item.id] || 0), 0), true);
-  $('#fixedBudgetTotal').innerHTML = totalRowHtml(budgetTotal('fixed'), monthlyTotal('fixed'), fixed.reduce((sum, item) => sum + (breakdown[item.id] || 0), 0), fixed.reduce((sum, item) => sum + (todayBreakdown[item.id] || 0), 0), false);
+  const monthlyBreakdown = monthlyBreakdownForSelection();
+  const operating = expenseItems.filter(item => item.group === 'operating');
+  const fixed = expenseItems.filter(item => item.group === 'fixed');
+  $('#operatingWeekly').textContent = money(breakdownTotal(operating, weeklyBreakdown));
+  $('#fixedWeekly').textContent = money(breakdownTotal(fixed, weeklyBreakdown));
+  $('#expenseGrandMonthly').textContent = money(monthlySpentForSelection());
+  $('#operatingExpenseRows').innerHTML = operating.map(item => expenseRowHtml(item, todayBreakdown, weeklyBreakdown, monthlyBreakdown)).join('');
+  $('#fixedExpenseRows').innerHTML = fixed.map(item => expenseRowHtml(item, todayBreakdown, weeklyBreakdown, monthlyBreakdown)).join('');
+  $('#operatingExpenseTotal').innerHTML = totalRowHtml(breakdownTotal(operating, todayBreakdown), breakdownTotal(operating, weeklyBreakdown), breakdownTotal(operating, monthlyBreakdown));
+  $('#fixedExpenseTotal').innerHTML = totalRowHtml(breakdownTotal(fixed, todayBreakdown), breakdownTotal(fixed, weeklyBreakdown), breakdownTotal(fixed, monthlyBreakdown));
 }
 
-function budgetRowHtml(item, spent, spentToday, fixed = false) {
-  const budget = getBudget(item.id);
-  return `<tr><td><strong>${escapeHtml(item.name)}</strong></td><td class="align-right daily-amount">${money(spentToday)}</td><td class="align-right">${money(budget.weekly)}</td><td class="align-right">${money(budget.monthly)}</td>${fixed ? '' : `<td class="align-right amount-cell">${money(spent)}</td>`}</tr>`;
+function expenseRowHtml(item, todayBreakdown, weeklyBreakdown, monthlyBreakdown) {
+  return `<tr><td><strong>${escapeHtml(item.name)}</strong></td><td class="align-right daily-amount">${money(todayBreakdown[item.id])}</td><td class="align-right amount-cell">${money(weeklyBreakdown[item.id])}</td><td class="align-right">${money(monthlyBreakdown[item.id])}</td></tr>`;
 }
 
-function totalRowHtml(weekly, monthly, spent, spentToday, showSpent) {
-  return `<tr class="total-row"><td>Total</td><td class="align-right">${money(spentToday)}</td><td class="align-right">${money(weekly)}</td><td class="align-right">${money(monthly)}</td>${showSpent ? `<td class="align-right">${money(spent)}</td>` : ''}</tr>`;
-}
-
-function renderHistory() {
-  const allWeeks = periods.flatMap(period => period.weeks.map((week, index) => ({ period, week, index, total: period.id === selectedPeriodId && index === selectedWeekIndex ? selectedTotal() : week.total })));
-  const sortedWeeks = allWeeks.slice().sort((a, b) => String(b.week.start || '').localeCompare(String(a.week.start || '')));
-  const chartWeeks = sortedWeeks.filter(item => item.total > 0).slice(0, 18).reverse();
-  const max = Math.max(...chartWeeks.map(item => item.total), 1);
-  $('#historyChart').innerHTML = chartWeeks.map(item => `<div class="chart-column"><div class="chart-bar-wrap"><div class="chart-bar" style="height:${Math.max(3, item.total / max * 100)}%" data-value="${money(item.total)}"></div></div><span class="chart-label" title="${escapeHtml(item.period.name)} · ${escapeHtml(item.week.label)}">${escapeHtml(item.week.label)}</span></div>`).join('');
-  $('#historyRows').innerHTML = sortedWeeks.map(item => {
-    const budget = budgetTotal(); const difference = budget - item.total; const status = item.total === 0 ? ['Sem dados', 'neutral'] : difference < 0 ? ['Excedido', 'over'] : ['En rango', ''];
-    return `<tr><td><span class="tag">${escapeHtml(item.period.sheet)}</span></td><td>${escapeHtml(item.week.label)}</td><td class="align-right amount-cell">${money(item.total)}</td><td class="align-right">${money(budget)}</td><td class="align-right" style="color:${difference < 0 ? '#a34641' : 'inherit'}">${difference >= 0 ? '+' : ''}${money(difference)}</td><td><span class="status-pill ${status[1]}">${status[0]}</span></td></tr>`;
-  }).join('');
+function totalRowHtml(today, weekly, monthly) {
+  return `<tr class="total-row"><td>Total</td><td class="align-right">${money(today)}</td><td class="align-right">${money(weekly)}</td><td class="align-right">${money(monthly)}</td></tr>`;
 }
 
 function setPeriodMenuOpen(isOpen) {
@@ -390,13 +622,47 @@ function downloadCsv(filename, rows) {
 }
 
 function bindEvents() {
-  document.addEventListener('click', event => {
+  $('#loginForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const submitButton = event.submitter;
+    $('#loginError').textContent = '';
+    if (submitButton) submitButton.disabled = true;
+    try {
+      const payload = await authRequest({
+        method: 'POST',
+        body: { username: $('#loginUsername').value.trim(), password: $('#loginPassword').value },
+      });
+      await startSession(payload.user);
+    } catch (error) {
+      $('#loginError').textContent = error.message;
+      $('#loginPassword').select();
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+  $('#logoutButton').addEventListener('click', async () => {
+    try { await authRequest({ method: 'DELETE' }); } catch (error) { console.warn('No se pudo cerrar la sesión en el servidor:', error); }
+    showLogin('Sesión cerrada correctamente.');
+  });
+  document.addEventListener('click', async event => {
     const viewButton = event.target.closest('[data-view]');
     if (viewButton) setView(viewButton.dataset.view);
+    const editButton = event.target.closest('[data-edit-id]');
+    if (editButton) startExpenseEdit(editButton.dataset.editId);
     const deleteButton = event.target.closest('[data-delete-id]');
     if (deleteButton) {
-      state.manualEntries = state.manualEntries.filter(entry => entry.id !== deleteButton.dataset.deleteId);
-      saveState(); renderDashboard(); renderCapture(); renderBudget(); showToast('Gasto eliminado.');
+      if (!databaseReady) return showToast('Espera a que la base de datos esté conectada.');
+      deleteButton.disabled = true;
+      try {
+        await apiRequest({ method: 'DELETE', body: undefined, id: deleteButton.dataset.deleteId });
+        state.manualEntries = state.manualEntries.filter(entry => entry.id !== deleteButton.dataset.deleteId);
+        if (editingExpenseId === deleteButton.dataset.deleteId) closeExpenseEdit();
+        renderAll();
+        showToast('Gasto eliminado de la base de datos.');
+      } catch (error) {
+        deleteButton.disabled = false;
+        showToast(error.message);
+      }
     }
     const deleteBulkButton = event.target.closest('[data-delete-bulk-id]');
     if (deleteBulkButton) {
@@ -418,29 +684,46 @@ function bindEvents() {
   document.addEventListener('click', event => {
     if (!event.target.closest('#periodSelectControl')) setPeriodMenuOpen(false);
   });
-  $('#rangeStartDate').addEventListener('change', event => {
-    rangeStartDate = event.target.value || `${localToday().slice(0, 7)}-01`;
-    if (rangeStartDate > rangeEndDate) rangeEndDate = rangeStartDate;
+  $$('[data-date-filter]').forEach(button => button.addEventListener('click', () => {
+    activeDateFilter = button.dataset.dateFilter;
+    applyDateFilter();
+    renderDashboard();
+  }));
+  $('#dayFilterDate').addEventListener('change', event => {
+    selectedFilterDay = event.target.value || localToday();
+    applyDateFilter();
     renderDashboard();
   });
-  $('#rangeEndDate').addEventListener('change', event => {
-    rangeEndDate = event.target.value || localToday();
-    if (rangeEndDate < rangeStartDate) rangeStartDate = rangeEndDate;
+  $('#weekFilterWeek').addEventListener('change', event => {
+    selectedFilterWeek = event.target.value || dateToIsoWeek(localToday());
+    applyDateFilter();
     renderDashboard();
   });
-  $('#captureWeek').addEventListener('change', event => { selectedWeekIndex = Number(event.target.value); renderSelectors(); $('#captureBudget').textContent = money(budgetTotal()); });
+  $('#monthFilterMonth').addEventListener('change', event => {
+    selectedFilterMonth = event.target.value || localToday().slice(0, 7);
+    applyDateFilter();
+    renderDashboard();
+  });
+  $('#captureWeek').addEventListener('change', event => { selectedWeekIndex = Number(event.target.value); renderSelectors(); renderCapture(); });
   $('#expenseCategory').addEventListener('change', syncExpenseTypeFromCategory);
+  $('#expenseCancelButton').addEventListener('click', () => setView('dashboard'));
+  $('#editExpenseCategory').addEventListener('change', syncEditExpenseTypeFromCategory);
+  $('#closeEditExpense').addEventListener('click', closeExpenseEdit);
+  $('#cancelEditExpense').addEventListener('click', closeExpenseEdit);
+  $('#editExpenseDialog').addEventListener('click', event => { if (event.target === event.currentTarget) closeExpenseEdit(); });
+  $('#editExpenseDialog').addEventListener('close', () => { editingExpenseId = ''; });
   $('#bulkCaptureWeek').addEventListener('change', event => { selectedWeekIndex = Number(event.target.value); renderSelectors(); renderCapture(); });
   $('#bulkExpenseCategory').addEventListener('change', syncBulkExpenseTypeFromCategory);
 
-  $('#expenseForm').addEventListener('submit', event => {
+  $('#expenseForm').addEventListener('submit', async event => {
     event.preventDefault();
+    if (!databaseReady) return showToast('Espera a que la base de datos esté conectada.');
     const amount = Number($('#expenseAmount').value);
     if (!amount || amount <= 0) return showToast('Escribe un monto mayor a cero.');
     const category = $('#expenseCategory').value;
-    
-    state.manualEntries.push({ 
-      id: `manual-${Date.now()}`, 
+    const submitButton = event.submitter;
+    const newEntry = {
+      id: newExpenseId(),
       date: $('#expenseDate').value, 
       category,
       amount, 
@@ -451,13 +734,55 @@ function bindEvents() {
       periodId: selectedPeriodId, 
       weekIndex: selectedWeekIndex, 
       source: 'manual' 
-    });
-    
-    saveState(); 
-    event.target.reset(); 
-    $('#expenseDate').value = localToday();
-    renderAll(); 
-    showToast('Gasto guardado y totales actualizados.'); 
+    };
+
+    if (submitButton) submitButton.disabled = true;
+    try {
+      const payload = await apiRequest({ method: 'POST', body: { entry: newEntry } });
+      if (Array.isArray(payload.entries)) state.manualEntries = payload.entries;
+      resetExpenseForm();
+      renderAll();
+      showToast(currentUser?.role === 'admin' ? 'Gasto guardado en Neon y totales actualizados.' : 'Gasto guardado correctamente.');
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+
+  $('#editExpenseForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!databaseReady) return showToast('Espera a que la base de datos esté conectada.');
+    const currentEntry = state.manualEntries.find(entry => entry.id === editingExpenseId);
+    if (!currentEntry) return closeExpenseEdit();
+    const amount = Number($('#editExpenseAmount').value);
+    if (!amount || amount <= 0) return showToast('Escribe un monto mayor a cero.');
+    const category = $('#editExpenseCategory').value;
+    const submitButton = event.submitter;
+    const updatedEntry = {
+      ...currentEntry,
+      date: $('#editExpenseDate').value,
+      weekIndex: Number($('#editExpenseWeek').value),
+      category,
+      amount,
+      note: $('#editExpenseNote').value.trim() || 'Sin nota',
+      payment: $('#editExpensePayment').value,
+      spender: $('#editExpenseSpender').value.trim(),
+      expenseType: getItem(category)?.group === 'fixed' ? 'Fijo' : 'Operativo',
+      source: 'manual'
+    };
+    if (submitButton) submitButton.disabled = true;
+    try {
+      const payload = await apiRequest({ method: 'POST', body: { entry: updatedEntry } });
+      if (Array.isArray(payload.entries)) state.manualEntries = payload.entries;
+      closeExpenseEdit();
+      renderAll();
+      showToast('Gasto actualizado en Neon.');
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
   });
 
   $('#bulkExpenseForm').addEventListener('submit', event => {
@@ -500,15 +825,22 @@ function bindEvents() {
     showToast('Lista de gastos vaciada.');
   });
 
-  $('#saveBulkExpenses').addEventListener('click', () => {
+  $('#saveBulkExpenses').addEventListener('click', async event => {
     if (!bulkDraftEntries.length) return;
-    const entriesToSave = [...bulkDraftEntries];
-    const idBase = Date.now();
-    state.manualEntries.push(...entriesToSave.map((entry, index) => ({ ...entry, id: `manual-${idBase + index}`, source: 'manual' })));
-    bulkDraftEntries = [];
-    saveState();
-    renderAll();
-    showToast(`${entriesToSave.length} ${entriesToSave.length === 1 ? 'gasto guardado' : 'gastos guardados'} correctamente.`);
+    if (!databaseReady) return showToast('Espera a que la base de datos esté conectada.');
+    const entriesToSave = bulkDraftEntries.map(entry => ({ ...entry, id: newExpenseId(), source: 'manual' }));
+    event.currentTarget.disabled = true;
+    try {
+      const payload = await apiRequest({ method: 'POST', body: { entries: entriesToSave } });
+      if (Array.isArray(payload.entries)) state.manualEntries = payload.entries;
+      bulkDraftEntries = [];
+      renderAll();
+      showToast(`${entriesToSave.length} ${entriesToSave.length === 1 ? 'gasto guardado' : 'gastos guardados'} en Neon.`);
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      event.currentTarget.disabled = bulkDraftEntries.length === 0;
+    }
   });
   $('#exportCsv').addEventListener('click', () => { 
     const rows = [['Fecha', 'Concepto', 'Tipo de gasto', 'Quién realizó el gasto', 'Nota', 'Forma de pago', 'Monto']].concat(movementRows().map(row => [
@@ -524,13 +856,24 @@ function bindEvents() {
     showToast('CSV descargado.'); 
   });
 
-  $('#historyExport').addEventListener('click', () => { const rows = [['Hoja', 'Semana', 'Gasto', 'Presupuesto semanal', 'Variación']]; periods.forEach(period => period.weeks.forEach((week, index) => rows.push([period.sheet, week.label, index === selectedWeekIndex && period.id === selectedPeriodId ? selectedTotal() : week.total, budgetTotal(), budgetTotal() - week.total]))); downloadCsv('historico-control-gastos.csv', rows); showToast('Histórico descargado.'); });
-  $('#resetData').addEventListener('click', () => { if (!window.confirm('¿Restaurar los datos demo y borrar los gastos capturados?')) return; state = defaultState(); bulkDraftEntries = []; activeCaptureMode = 'single'; saveState(); selectedPeriodId = currentPeriodId; selectedWeekIndex = 0; renderAll(); showToast('Datos demo restaurados.'); });
+  $('#refreshData').addEventListener('click', () => syncExpenses({ migrateLegacy: true }));
 }
 
-function renderAll() { renderSelectors(); renderDashboard(); if (activeView === 'capture') renderCapture(); if (activeView === 'budget') renderBudget(); if (activeView === 'history') renderHistory(); }
+function renderAll() {
+  renderSelectors();
+  if (currentUser?.role === 'admin') renderDashboard();
+  if (activeView === 'capture') renderCapture();
+  if (activeView === 'expenses' && currentUser?.role === 'admin') renderExpenses();
+}
 
 bindEvents();
 $('#expenseDate').value = localToday();
 $('#bulkExpenseDate').value = localToday();
-renderAll();
+initializeSession();
+window.addEventListener('focus', () => { if (currentUser?.role === 'admin') syncExpenses({ migrateLegacy: false, silent: true }); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && currentUser?.role === 'admin') syncExpenses({ migrateLegacy: false, silent: true });
+});
+window.setInterval(() => {
+  if (document.visibilityState === 'visible' && currentUser?.role === 'admin') syncExpenses({ migrateLegacy: false, silent: true });
+}, 30000);

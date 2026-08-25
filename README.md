@@ -1,18 +1,20 @@
 # Control de gastos · La Querendona Ciudad Sahagún
 
-Aplicación web estática para convertir el archivo `Control de Gastos.xlsx` en un control operativo de gastos para Ciudad Sahagún.
+Aplicación web para registrar y consultar los gastos de La Querendona Ciudad Sahagún.
 
 ## Incluye
 
-- Resumen semanal con gasto, presupuesto, disponible y uso del presupuesto.
-- Captura de gastos con fecha, semana, concepto, monto, forma de pago y nota.
-- Presupuesto operativo y gastos fijos con montos semanales/mensuales editables.
-- Histórico semanal basado en las hojas `Hoja1`, `sep-dic25`, `2026-1sem` y `2026-2sem`.
-- Exportación de movimientos e histórico a CSV.
-- Persistencia local en el navegador mediante `localStorage`.
+- Inicio de sesión con perfiles de administrador y empleado.
+- Resumen de gastos reales por día, semana, mes y concepto.
+- Captura individual y masiva de gastos con fecha, semana, concepto, responsable, monto, forma de pago y nota.
+- Registro de gastos operativos y fijos con acumulados diarios, semanales y mensuales.
+- Edición y eliminación de movimientos para administradores.
+- Gráficas generales, operativas y fijas vinculadas a los filtros de fecha.
+- Descarga de movimientos para Excel.
+- Persistencia compartida en Neon Postgres para consultar los mismos gastos desde varios dispositivos.
 
 ## Uso
 
-Abre `index.html` en un navegador o publícalo como sitio estático (por ejemplo, GitHub Pages). No requiere build ni dependencias de servidor.
+La interfaz se publica en Vercel y usa las funciones `/api/auth` y `/api/expenses` sin exponer credenciales en el navegador. El proyecto requiere las variables `DATABASE_URL`, `AUTH_SECRET`, `APP_ADMIN_USERNAME`, `APP_ADMIN_PASSWORD`, `APP_EMPLOYEE_USERNAME` y `APP_EMPLOYEE_PASSWORD`.
 
-Los montos demo y las semanas iniciales fueron transcritos del libro de Excel proporcionado. Los nuevos registros se guardan en el navegador del usuario y se recalculan al instante.
+Los registros existentes en `localStorage` se migran automáticamente a la tabla independiente `sahagun_expenses` en Neon y luego se eliminan del almacenamiento local.

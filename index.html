@@ -5,13 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#173f36" />
     <title>Control de gastos · La Querendona Ciudad Sahagún</title>
-    <link rel="stylesheet" href="styles.css?v=2026-08-14-9" />
+    <link rel="stylesheet" href="styles.css?v=2026-08-25-3" />
   </head>
   <body>
-    <div class="app-shell">
+    <section class="login-screen" id="loginScreen">
+      <div class="login-card">
+        <div class="login-brand">
+          <img src="assets/logo-la-querendona.png" alt="Logo de La Querendona" />
+          <div><strong>La Querendona Ciudad Sahagún</strong><span>Control de gastos</span></div>
+        </div>
+        <p class="eyebrow">Acceso al sistema</p>
+        <h1>Iniciar sesión</h1>
+        <p class="login-intro">Ingresa con la cuenta asignada para continuar.</p>
+        <form id="loginForm" class="login-form">
+          <label>Usuario<input id="loginUsername" type="text" autocomplete="username" required /></label>
+          <label>Contraseña<input id="loginPassword" type="password" autocomplete="current-password" required /></label>
+          <p class="login-error" id="loginError" role="alert" aria-live="polite"></p>
+          <button class="primary-button" type="submit">Entrar <span>→</span></button>
+        </form>
+      </div>
+    </section>
+
+    <div class="app-shell" id="appShell" hidden>
       <aside class="sidebar" aria-label="Navegación principal">
         <div class="brand">
-          <div class="brand-mark">Q</div>
+          <img class="brand-mark" src="assets/logo-la-querendona.png" alt="Logo de La Querendona" />
           <div>
             <strong>La Querendona Ciudad Sahagún</strong>
             <span>Control de gastos</span>
@@ -20,27 +38,31 @@
 
         <div class="side-label">Menú</div>
         <nav class="main-nav">
-          <button class="nav-item active" data-view="dashboard"><span class="nav-icon">⌂</span>Resumen</button>
+          <button class="nav-item active" data-view="dashboard" data-admin-only><span class="nav-icon">⌂</span>Resumen</button>
           <button class="nav-item" data-view="capture"><span class="nav-icon">＋</span>Capturar gasto</button>
-          <button class="nav-item" data-view="budget"><span class="nav-icon">▤</span>Registro de gastos</button>
-          <button class="nav-item" data-view="history"><span class="nav-icon">◷</span>Histórico</button>
+          <button class="nav-item" data-view="expenses" data-admin-only><span class="nav-icon">▤</span>Registro de gastos</button>
         </nav>
 
         <div class="sidebar-footer">
-          <div class="store-card">
-            <span class="store-dot"></span>
+          <div class="account-card">
+            <strong id="sessionDisplayName">Usuario</strong>
+            <span id="sessionRole">Sesión activa</span>
+          </div>
+          <div class="store-card" data-admin-only>
+            <span class="store-dot" id="databaseStatusDot" data-status="syncing"></span>
             <div>
               <strong>Ciudad Sahagún</strong>
-              <span>Operación activa</span>
+              <span id="databaseStatus">Sincronizando…</span>
             </div>
           </div>
-          <button class="reset-link" id="resetData">Restaurar datos demo</button>
+          <button class="reset-link" id="refreshData" data-admin-only>Actualizar datos</button>
+          <button class="logout-link" id="logoutButton" type="button">Cerrar sesión</button>
         </div>
       </aside>
 
       <main class="main-content">
         <header class="topbar">
-          <div class="mobile-brand"><div class="brand-mark">Q</div><strong>La Querendona Ciudad Sahagún</strong></div>
+          <div class="mobile-brand"><img class="brand-mark" src="assets/logo-la-querendona.png" alt="Logo de La Querendona" /><strong>La Querendona Ciudad Sahagún</strong></div>
           <div class="period-control">
             <label for="periodSelectButton">Periodo</label>
             <div class="custom-select period-select" id="periodSelectControl">
@@ -51,28 +73,44 @@
             </div>
           </div>
           <div class="topbar-actions">
-            <button class="ghost-button" id="exportCsv"><span>↓</span> Exportar CSV</button>
+            <button class="ghost-button" id="exportCsv" data-admin-only><span>↓</span> Descargar Excel</button>
             <button class="primary-button" data-view="capture"><span>＋</span> Nuevo gasto</button>
           </div>
         </header>
 
         <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-        <section id="dashboardView" class="view active-view">
+        <section id="dashboardView" class="view active-view" data-admin-only>
           <div class="page-heading">
             <div>
               <p class="eyebrow">Control operativo</p>
               <h1>Resumen de gastos</h1>
               <p class="muted" id="dashboardSubtitle">Visualiza el gasto de tu operación por semana y concepto.</p>
             </div>
-            <div class="date-range-picker" aria-label="Rango visible">
-              <span class="date-range-title">Rango visible</span>
-              <label>Desde<input id="rangeStartDate" type="date" /></label>
-              <label>Hasta<input id="rangeEndDate" type="date" /></label>
+            <div class="date-filter" aria-label="Filtro de fecha">
+              <div class="date-filter-heading">
+                <span class="date-range-title">Filtrar por</span>
+                <div class="date-filter-tabs" role="tablist" aria-label="Tipo de filtro de fecha">
+                  <button class="date-filter-tab" type="button" role="tab" data-date-filter="day" aria-selected="false">Día</button>
+                  <button class="date-filter-tab" type="button" role="tab" data-date-filter="week" aria-selected="false">Semana</button>
+                  <button class="date-filter-tab is-active" type="button" role="tab" data-date-filter="month" aria-selected="true">Mes</button>
+                </div>
+              </div>
+              <div class="date-filter-body">
+                <label class="date-filter-control" data-date-control="day" hidden>Selecciona el día<input id="dayFilterDate" type="date" /></label>
+                <label class="date-filter-control" data-date-control="week" hidden>Selecciona la semana<input id="weekFilterWeek" type="week" /></label>
+                <label class="date-filter-control" data-date-control="month">Selecciona el mes<input id="monthFilterMonth" type="month" /></label>
+                <span class="date-filter-range" id="dateFilterRange"></span>
+              </div>
             </div>
           </div>
 
           <div class="kpi-grid dashboard-kpi-grid">
+            <article class="kpi-card">
+              <div class="kpi-top"><span class="kpi-label">Gasto diario</span><span class="kpi-icon aqua">☀</span></div>
+              <strong id="kpiDailySpent">$0</strong>
+              <span class="kpi-note" id="kpiDailySpentNote">Gastos de hoy</span>
+            </article>
             <article class="kpi-card">
               <div class="kpi-top"><span class="kpi-label">Gasto semanal</span><span class="kpi-icon green">↗</span></div>
               <strong id="kpiSpent">$0</strong>
@@ -102,12 +140,29 @@
             </article>
           </div>
 
+          <div class="content-grid expense-type-pie-grid">
+            <article class="panel spending-pie-panel">
+              <div class="panel-heading">
+                <div><p class="eyebrow">Gastos operativos</p><h3>Participación por concepto</h3></div>
+                <span class="panel-caption" id="operatingPieCaption">Rango seleccionado</span>
+              </div>
+              <div id="operatingPieContent" class="spending-pie-content"></div>
+            </article>
+            <article class="panel spending-pie-panel">
+              <div class="panel-heading">
+                <div><p class="eyebrow">Gastos fijos</p><h3>Participación por concepto</h3></div>
+                <span class="panel-caption" id="fixedPieCaption">Rango seleccionado</span>
+              </div>
+              <div id="fixedPieContent" class="spending-pie-content"></div>
+            </article>
+          </div>
+
           <article class="panel table-panel">
             <div class="panel-heading">
               <div><p class="eyebrow">Detalle</p><h3>Últimos movimientos</h3></div>
               <button class="text-button" data-view="capture">＋ Registrar gasto</button>
             </div>
-            <div class="table-scroll"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Nota</th><th class="align-right">Monto</th><th></th></tr></thead><tbody id="movementRows"></tbody></table></div>
+            <div class="table-scroll"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Realizó el gasto</th><th>Nota</th><th class="align-right">Monto</th><th></th></tr></thead><tbody id="movementRows"></tbody></table></div>
           </article>
         </section>
 
@@ -128,6 +183,7 @@
                   <div class="form-grid">
                     <label>Fecha *<input id="expenseDate" type="date" required /></label>
                     <label>Semana *<select id="captureWeek" required></select></label>
+
                     <label>Concepto *<select id="expenseCategory" required></select></label>
                     <label>Tipo de gasto *
                       <select id="expenseType" required disabled title="Se asigna automáticamente según el concepto seleccionado">
@@ -135,18 +191,22 @@
                         <option value="Fijo">Gasto Fijo</option>
                       </select>
                     </label>
-                    <label>¿Quién realizó el gasto? *<input id="expenseSpender" type="text" placeholder="Ej. Cajero, Encargado..." required /></label>
+
+                    <label>¿Quién realizó el gasto? *
+                      <select id="expenseSpender" required><option value="" disabled selected>Selecciona una persona</option><option>Alejandra</option><option>Horacio</option><option>Diego</option><option>Haytham</option><option>Mary</option></select>
+                    </label>
                     <label>Forma de pago<select id="expensePayment"><option>Efectivo</option><option>Tarjeta</option><option>Transferencia</option><option>Otro</option></select></label>
+
                     <label>Monto *<div class="currency-input"><span>$</span><input id="expenseAmount" type="number" min="0.01" step="0.01" placeholder="0.00" required /></div></label>
                     <label>Nota<input id="expenseNote" type="text" maxlength="80" placeholder="Ej. compra de insumos para el turno" /></label>
                   </div>
-                  <div class="form-actions"><button type="button" class="ghost-button" data-view="dashboard">Cancelar</button><button class="primary-button" type="submit">Guardar gasto <span>→</span></button></div>
+                  <div class="form-actions"><button type="button" class="ghost-button" id="expenseCancelButton" data-admin-only>Cancelar</button><button class="primary-button" type="submit">Guardar gasto <span>→</span></button></div>
                 </form>
               </article>
-              <aside class="panel tip-panel">
+              <aside class="panel tip-panel" data-admin-only>
                 <div class="tip-icon">✦</div>
                 <p class="eyebrow">Tip de control</p><h3>Registra el gasto el mismo día.</h3>
-                <div class="tip-rule"></div><div class="tip-stat"><span>Presupuesto de la semana</span><strong id="captureBudget">$0</strong></div>
+                <div class="tip-rule"></div><div class="tip-stat"><span>Gasto registrado esta semana</span><strong id="captureWeeklySpent">$0</strong></div>
               </aside>
             </div>
           </div>
@@ -165,13 +225,14 @@
                       <option value="Fijo">Gasto Fijo</option>
                     </select>
                   </label>
-                  <label>¿Quién realizó el gasto? *<input id="bulkExpenseSpender" type="text" placeholder="Ej. Cajero, Encargado..." required /></label>
+                  <label>¿Quién realizó el gasto? *<select id="bulkExpenseSpender" required><option value="" disabled selected>Selecciona una persona</option><option>Alejandra</option><option>Horacio</option><option>Diego</option><option>Haytham</option><option>Mary</option></select></label>
                   <label>Forma de pago<select id="bulkExpensePayment"><option>Efectivo</option><option>Tarjeta</option><option>Transferencia</option><option>Otro</option></select></label>
                   <label>Monto *<div class="currency-input"><span>$</span><input id="bulkExpenseAmount" type="number" min="0.01" step="0.01" placeholder="0.00" required /></div></label>
                   <label>Nota<input id="bulkExpenseNote" type="text" maxlength="80" placeholder="Ej. compra de insumos para el turno" /></label>
                 </div>
                 <div class="bulk-add-action"><button class="ghost-button bulk-add-button" type="submit">＋ Agregar a la lista</button></div>
               </form>
+
               <div class="bulk-summary-bar" aria-live="polite">
                 <span><strong id="bulkEntryCount">0 gastos</strong> en lista</span>
                 <span>Total: <strong id="bulkEntryTotal">$0.00</strong></span>
@@ -183,24 +244,38 @@
               </div>
             </article>
           </div>
-          <article class="panel table-panel capture-history"><div class="panel-heading"><div><p class="eyebrow">Registros de la semana</p><h3>Movimientos registrados</h3></div><span class="panel-caption" id="newMovementCount">0 registros</span></div><div class="table-scroll"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Pago</th><th>Nota</th><th class="align-right">Monto</th><th></th></tr></thead><tbody id="newMovementRows"></tbody></table></div></article>
+          <article class="panel table-panel capture-history" data-admin-only><div class="panel-heading"><div><p class="eyebrow">Registros de la semana</p><h3>Movimientos registrados</h3></div><span class="panel-caption" id="newMovementCount">0 registros</span></div><div class="table-scroll"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Realizó el gasto</th><th>Pago</th><th>Nota</th><th class="align-right">Monto</th><th></th></tr></thead><tbody id="newMovementRows"></tbody></table></div></article>
         </section>
 
-        <section id="budgetView" class="view">
-          <div class="page-heading"><div><p class="eyebrow">Control operativo</p><h1>Registro de gastos</h1></div><div class="budget-total-pill"><span>Total mensual</span><strong id="monthlyBudgetTotal">$0</strong></div></div>
-          <div class="budget-summary-grid"><article class="summary-card"><span>Operativo · semanal</span><strong id="operatingWeekly">$0</strong><small>Compras e insumos</small></article><article class="summary-card"><span>Gastos fijos · semanal</span><strong id="fixedWeekly">$0</strong><small>Nómina, renta y luz</small></article><article class="summary-card accent"><span>Presupuesto total · mensual</span><strong id="budgetGrandMonthly">$0</strong><small>Operativo + fijos</small></article></div>
-          <div class="content-grid budget-columns"><article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Gastos operativos</p><h3>Presupuesto por concepto</h3></div></div><div class="table-scroll"><table><thead><tr><th>Concepto</th><th class="align-right">Día (hoy)</th><th class="align-right">Semanal</th><th class="align-right">Mensual</th><th class="align-right">Gastado</th></tr></thead><tbody id="operatingBudgetRows"></tbody><tfoot id="operatingBudgetTotal"></tfoot></table></div></article><article class="panel table-panel fixed-budget-panel"><div class="panel-heading"><div><p class="eyebrow">Gastos fijos</p><h3>Costos mensuales</h3></div></div><div class="table-scroll"><table><thead><tr><th>Concepto</th><th class="align-right">Día (hoy)</th><th class="align-right">Semanal</th><th class="align-right">Mensual</th></tr></thead><tbody id="fixedBudgetRows"></tbody><tfoot id="fixedBudgetTotal"></tfoot></table></div></article></div>
+        <section id="expensesView" class="view" data-admin-only>
+          <div class="page-heading"><div><p class="eyebrow">Control operativo</p><h1>Registro de gastos</h1></div></div>
+          <div class="expense-summary-grid"><article class="summary-card"><span>Gastos operativos · semanal</span><strong id="operatingWeekly">$0</strong><small>Compras e insumos registrados</small></article><article class="summary-card"><span>Gastos fijos · semanal</span><strong id="fixedWeekly">$0</strong><small>Costos registrados</small></article><article class="summary-card accent"><span>Gasto total · mensual</span><strong id="expenseGrandMonthly">$0</strong><small>Operativos + fijos</small></article></div>
+          <div class="content-grid expense-columns"><article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Gastos operativos</p><h3>Gastos por concepto</h3></div></div><div class="table-scroll"><table><thead><tr><th>Concepto</th><th class="align-right">Día (hoy)</th><th class="align-right">Semanal</th><th class="align-right">Mensual</th></tr></thead><tbody id="operatingExpenseRows"></tbody><tfoot id="operatingExpenseTotal"></tfoot></table></div></article><article class="panel table-panel fixed-expense-panel"><div class="panel-heading"><div><p class="eyebrow">Gastos fijos</p><h3>Gastos por concepto</h3></div></div><div class="table-scroll"><table><thead><tr><th>Concepto</th><th class="align-right">Día (hoy)</th><th class="align-right">Semanal</th><th class="align-right">Mensual</th></tr></thead><tbody id="fixedExpenseRows"></tbody><tfoot id="fixedExpenseTotal"></tfoot></table></div></article></div>
         </section>
 
-        <section id="historyView" class="view">
-          <div class="page-heading"><div><p class="eyebrow">Seguimiento histórico</p><h1>Histórico semanal</h1><p class="muted">Consulta los totales semanales tomados de las hojas del control de gastos.</p></div><button class="ghost-button" id="historyExport">↓ Descargar histórico</button></div>
-          <article class="panel chart-panel"><div class="panel-heading"><div><p class="eyebrow">Tendencia</p><h3>Gasto por semana</h3></div><span class="panel-caption">Últimas semanas con movimiento</span></div><div id="historyChart" class="history-chart"></div></article>
-          <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Archivo Excel</p><h3>Periodos registrados</h3></div></div><div class="table-scroll"><table><thead><tr><th>Hoja</th><th>Semana</th><th class="align-right">Gasto</th><th class="align-right">Presupuesto</th><th class="align-right">Variación</th><th>Estado</th></tr></thead><tbody id="historyRows"></tbody></table></div></article>
-        </section>
       </main>
     </div>
+    <dialog class="expense-edit-dialog" id="editExpenseDialog" aria-labelledby="editExpenseTitle">
+      <form id="editExpenseForm">
+        <div class="edit-dialog-heading">
+          <div><p class="eyebrow">Corrección de gasto</p><h2 id="editExpenseTitle">Editar movimiento</h2><p class="muted" id="editExpenseSubtitle"></p></div>
+          <button class="edit-dialog-close" id="closeEditExpense" type="button" aria-label="Cerrar ventana de edición">×</button>
+        </div>
+        <div class="form-grid edit-expense-grid">
+          <label>Fecha *<input id="editExpenseDate" type="date" required /></label>
+          <label>Semana *<select id="editExpenseWeek" required></select></label>
+          <label>Concepto *<select id="editExpenseCategory" required></select></label>
+          <label>Tipo de gasto *<select id="editExpenseType" required disabled><option value="Operativo">Gasto Operativo</option><option value="Fijo">Gasto Fijo</option></select></label>
+          <label>¿Quién realizó el gasto? *<select id="editExpenseSpender" required><option value="" disabled>Selecciona una persona</option><option>Alejandra</option><option>Horacio</option><option>Diego</option><option>Haytham</option><option>Mary</option></select></label>
+          <label>Forma de pago<select id="editExpensePayment"><option>Efectivo</option><option>Tarjeta</option><option>Transferencia</option><option>Otro</option></select></label>
+          <label>Monto *<div class="currency-input"><span>$</span><input id="editExpenseAmount" type="number" min="0.01" step="0.01" required /></div></label>
+          <label>Nota<input id="editExpenseNote" type="text" maxlength="80" placeholder="Ej. compra de insumos para el turno" /></label>
+        </div>
+        <div class="form-actions edit-dialog-actions"><button class="ghost-button" id="cancelEditExpense" type="button">Cancelar</button><button class="primary-button" type="submit">Guardar cambios <span>→</span></button></div>
+      </form>
+    </dialog>
     <script src="period-data.js"></script>
     <script src="excel-data.js"></script>
-    <script src="app.js?v=2026-08-14-14"></script>
+    <script src="app.js?v=2026-08-25-2"></script>
   </body>
 </html>
