@@ -33,7 +33,7 @@ const expenseItems = [
   { id: 'gerencia', name: 'Gerencia', group: 'fixed' },
   { id: 'reserva', name: 'Fondo de reserva', group: 'fixed' },
 ];
-const expenseSpenders = ['Alejandra', 'Horacio', 'Diego', 'Haytham', 'Mary'];
+const expenseSpenders = ['Rosi', 'Magos', 'Horacio', 'Alexa', 'Raul', 'Eliphalet', 'Diego'];
 
 const spendingPieColors = ['#24584a', '#8cbf8d', '#c17db9', '#83cfc5', '#e4a84c', '#7b8fc5', '#d4776a'];
 
