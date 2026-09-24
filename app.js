@@ -38,7 +38,7 @@ const expenseItems = [
   { id: 'reserva', name: 'Fondo de reserva', group: 'fixed' },
   { id: 'permisos-licencia', name: 'Permisos y licencia', group: 'fixed' },
 ];
-const expenseSpenders = ['Rosi', 'Magos', 'Horacio', 'Alexa', 'Raul', 'Eliphalet', 'Diego'];
+const expenseSpenders = ['Rosi', 'Magos', 'Horacio', 'Raul', 'Eliphalet'];
 
 const spendingPieColors = ['#24584a', '#8cbf8d', '#c17db9', '#83cfc5', '#e4a84c', '#7b8fc5', '#d4776a'];
 
